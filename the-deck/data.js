@@ -6,10 +6,7 @@ window.QUESTIONS_DATA = {
       description: "Chemistry & desire",
       color: "#C4756A",
       bg: "rgba(196, 117, 106, 0.08)",
-      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 3C10 6.5 8 9.5 8 12.5a4 4 0 0 0 8 0C16 9.5 14 6.5 12 3Z"/>
-        <path d="M10 14.5c0 1.8.8 3.2 2 4 1.2-.8 2-2.2 2-4"/>
-      </svg>`
+      icon: `<span class="iconify" data-icon="ph:campfire-duotone" data-width="56" data-height="56"></span>`
     },
     {
       id: "drive",
@@ -17,9 +14,7 @@ window.QUESTIONS_DATA = {
       description: "Ambition & what you're building",
       color: "#5C6E8A",
       bg: "rgba(92, 110, 138, 0.08)",
-      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 20 L9 8 L13 14 L16 10 L21 20 Z"/>
-      </svg>`
+      icon: `<span class="iconify" data-icon="ph:mountains-duotone" data-width="56" data-height="56"></span>`
     },
     {
       id: "world",
@@ -27,12 +22,7 @@ window.QUESTIONS_DATA = {
       description: "Curiosity & how you see things",
       color: "#7A9E82",
       bg: "rgba(122, 158, 130, 0.08)",
-      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 4C7 7 6 15 12 20C18 15 17 7 12 4Z"/>
-        <line x1="12" y1="4" x2="12" y2="20"/>
-        <path d="M6.5 9.5 Q12 11 17.5 9.5"/>
-        <path d="M6 14.5 Q12 16 18 14.5"/>
-      </svg>`
+      icon: `<span class="iconify" data-icon="ph:compass-rose-duotone" data-width="56" data-height="56"></span>`
     },
     {
       id: "core",
@@ -40,10 +30,7 @@ window.QUESTIONS_DATA = {
       description: "Values & who you are",
       color: "#C49A4A",
       bg: "rgba(196, 154, 74, 0.08)",
-      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="12,3 20,7.5 20,16.5 12,21 4,16.5 4,7.5"/>
-        <polygon points="12,8 16,10.5 16,15.5 12,18 8,15.5 8,10.5"/>
-      </svg>`
+      icon: `<span class="iconify" data-icon="ph:diamond-duotone" data-width="56" data-height="56"></span>`
     },
     {
       id: "lucky",
@@ -51,9 +38,7 @@ window.QUESTIONS_DATA = {
       description: "A mix of everything",
       color: "#8B7EC8",
       bg: "rgba(139, 126, 200, 0.08)",
-      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2 L14.4 9.6 L22 12 L14.4 14.4 L12 22 L9.6 14.4 L2 12 L9.6 9.6 Z"/>
-      </svg>`
+      icon: `<span class="iconify" data-icon="ph:shooting-star-duotone" data-width="56" data-height="56"></span>`
     }
   ],
 

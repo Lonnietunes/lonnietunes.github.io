@@ -41,12 +41,18 @@ function initCategoryGrid() {
     card.setAttribute('tabindex', '0');
     card.setAttribute('aria-label', cat.name);
 
+    const count = cat.id === 'lucky'
+      ? Math.min(...['spark','drive','world','core'].map(id =>
+          window.QUESTIONS_DATA.questions.filter(q => q.category === id).length)) * 4
+      : window.QUESTIONS_DATA.questions.filter(q => q.category === cat.id).length;
+
     card.innerHTML = `
       <div class="card-inner">
         <div class="card-face card-front">
           <div class="card-icon">${cat.icon}</div>
           <span class="card-name">${cat.name}</span>
           <span class="card-desc">${cat.description}</span>
+          <span class="card-count">${count} questions</span>
         </div>
         <div class="card-face card-back"></div>
       </div>
@@ -101,8 +107,8 @@ function setupCategory(categoryId) {
 
   state.queue = shuffle([...questions]);
 
-  // Update header
-  pillIcon.innerHTML = cat.icon;
+  // Update header — use smaller icon size in pill
+  pillIcon.innerHTML = cat.icon.replace(/data-width="\d+"/, 'data-width="18"').replace(/data-height="\d+"/, 'data-height="18"');
   pillName.textContent = cat.name;
   document.body.dataset.category = categoryId;
 
@@ -190,7 +196,7 @@ function updateProgress() {
 /* ── Done screen ── */
 function showDone() {
   const cat = state.currentCategory;
-  doneIcon.innerHTML = cat ? cat.icon : '';
+  doneIcon.innerHTML = cat ? cat.icon.replace(/data-width="\d+"/, 'data-width="48"').replace(/data-height="\d+"/, 'data-height="48"') : '';
   if (cat) doneIcon.style.color = cat.color;
   showScreen('done');
 }
