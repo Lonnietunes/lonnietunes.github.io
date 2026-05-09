@@ -341,5 +341,13 @@ function shuffle(arr) {
   return arr;
 }
 
+/* ── Adapt input hint to device ── */
+(function() {
+  const el = document.getElementById('input-instruction');
+  if (!el) return;
+  const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  el.textContent = isTouch ? 'swipe or tap' : '← skip  ·  answer →';
+})();
+
 /* ── Init ── */
 initCategoryGrid();
