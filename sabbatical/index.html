@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Master Map — Sabbatical Journey</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+  :root {
+    --text: #1d1d1f; --muted: #6e6e73; --faint: #a1a1a6;
+    --line: #e5e5e7; --bg: #ffffff; --wash: #fafafa;
+    --ground: #1d1d1f;   /* bus, train, car */
+    --water:  #0071e3;   /* boat, ferry */
+    --air:    #8e8e93;   /* flight */
+    --maybe:  #c7900d;   /* undecided stops */
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased;
+  }
+  #app { display: flex; height: 100vh; }
+
+  /* ---------- Sidebar ---------- */
+  #sidebar {
+    width: 390px; flex-shrink: 0; height: 100%; overflow-y: auto;
+    border-right: 1px solid var(--line); padding: 30px 28px 60px;
+  }
+  #sidebar h1 { font-size: 21px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 4px; }
+  .subtitle { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin: 0 0 20px; }
+
+  /* Day budget panel */
+  .budget { background: var(--wash); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 18px; }
+  .budget .row { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; padding: 3px 0; }
+  .budget .row .k { color: var(--muted); }
+  .budget .row .v { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .budget .row.total { border-top: 1px solid var(--line); margin-top: 7px; padding-top: 8px; }
+  .budget .note { font-size: 11.5px; color: var(--muted); line-height: 1.5; margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--line); }
+  .over { color: #d0342c; }
+  .fits { color: #1d8a45; }
+
+  /* Toggle */
+  .toggle { display: flex; align-items: center; gap: 9px; font-size: 13px; cursor: pointer;
+    padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 18px; user-select: none; }
+  .toggle:hover { background: var(--wash); }
+  .toggle input { accent-color: var(--maybe); width: 15px; height: 15px; cursor: pointer; }
+
+  /* Legend */
+  .legend { padding: 12px 15px; margin-bottom: 22px; background: var(--wash);
+    border: 1px solid var(--line); border-radius: 12px; }
+  .legend .lrow { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--muted); padding: 3px 0; }
+  .legend .swatch { width: 26px; height: 0; border-top-width: 2.5px; flex-shrink: 0; }
+  .legend .swatch.ground { border-top: 2.5px solid var(--ground); }
+  .legend .swatch.water  { border-top: 2.5px solid var(--water); }
+  .legend .swatch.air    { border-top: 2.5px dashed var(--air); }
+  .legend .swatch.spur   { border-top: 2.5px dotted var(--maybe); }
+  .legend .dotmark { width: 11px; height: 11px; border-radius: 50%; background: var(--ground); flex-shrink: 0; margin: 0 7px; }
+  .legend .dotmark.hollow { background: #fff; border: 2px solid var(--maybe); }
+
+  /* Stop list */
+  .leg-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+    font-weight: 600; margin: 24px 0 4px; padding-bottom: 7px; border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .leg-label .nights { letter-spacing: 0; text-transform: none; font-weight: 500; color: var(--faint); }
+  .stop { padding: 10px 13px; border-radius: 11px; cursor: pointer; transition: background 0.15s; margin: 2px -6px; }
+  .stop:hover { background: #f0f0f2; }
+  .stop.is-maybe { opacity: 0.72; }
+  .stop .top { display: flex; align-items: baseline; gap: 9px; }
+  .stop .idx { font-size: 10.5px; color: var(--faint); font-variant-numeric: tabular-nums; min-width: 15px; font-weight: 600; }
+  .stop .name { font-size: 14.5px; font-weight: 560; flex: 1; }
+  .stop .nights { font-size: 11.5px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .stop .why { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 4px 0 0 24px; }
+  .stop .maybe-tag { font-size: 9.5px; font-weight: 700; color: var(--maybe); letter-spacing: 0.06em;
+    border: 1px solid rgba(199,144,13,0.35); border-radius: 20px; padding: 1px 6px; text-transform: uppercase; }
+
+  /* ---------- Map ---------- */
+  #map { flex: 1; height: 100%; background: #eef1f4; }
+  .leaflet-popup-content-wrapper { border-radius: 14px; box-shadow: 0 10px 34px rgba(0,0,0,0.14); }
+  .leaflet-popup-content { margin: 15px 17px; font-family: inherit; width: 268px !important; }
+  .pop-name { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+  .pop-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 3px; }
+  .pop-nights { font-size: 11.5px; font-weight: 600; color: var(--water); white-space: nowrap; }
+  .pop-country { font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; margin-bottom: 9px; }
+  .pop-why { font-size: 12.5px; line-height: 1.55; margin-bottom: 11px; }
+  .pop-field { font-size: 12px; line-height: 1.5; margin-bottom: 7px; display: flex; gap: 8px; }
+  .pop-field .lab { color: var(--faint); font-weight: 600; font-size: 10.5px; text-transform: uppercase;
+    letter-spacing: 0.05em; min-width: 52px; flex-shrink: 0; padding-top: 1.5px; }
+  .pop-field .val { color: var(--text); }
+  .pop-months { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--line);
+    font-size: 11.5px; color: var(--muted); }
+  .pop-months strong { color: var(--text); font-weight: 600; }
+  .pop-maybe { margin-top: 10px; padding: 7px 10px; background: rgba(199,144,13,0.09);
+    border-radius: 8px; font-size: 11.5px; color: #8a6407; line-height: 1.45; }
+
+  .marker-dot { border-radius: 50%; box-shadow: 0 1px 6px rgba(0,0,0,0.35); }
+  .leaflet-tooltip.stop-label {
+    background: rgba(255,255,255,0.94); border: 1px solid var(--line); border-radius: 6px; box-shadow: none;
+    color: var(--text); font-family: inherit; font-size: 11px; font-weight: 600; padding: 2px 7px;
+  }
+  .leaflet-tooltip.stop-label.maybe { color: var(--maybe); }
+  .leaflet-tooltip.stop-label::before { display: none; }
+
+  /* Friendly failure if Leaflet can't load (e.g. offline) */
+  #map-error { display: none; padding: 40px; max-width: 460px; margin: auto; align-self: center; }
+  #map-error h2 { font-size: 17px; margin: 0 0 10px; }
+  #map-error p { font-size: 13.5px; color: var(--muted); line-height: 1.6; margin: 0 0 10px; }
+
+  @media (max-width: 760px) {
+    #app { flex-direction: column; }
+    #sidebar { width: 100%; height: auto; max-height: 52vh; }
+    #map { height: 48vh; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <h1>The Journey</h1>
+    <p class="subtitle">Winter 2026/27. Every stop in order, with the line showing how you get to the next one. Click any dot or row for the detail.</p>
+
+    <div class="budget" id="budget"></div>
+
+    <label class="toggle">
+      <input type="checkbox" id="show-maybes" checked />
+      <span>Show undecided stops</span>
+    </label>
+
+    <div class="legend">
+      <div class="lrow"><span class="swatch ground"></span> Bus, train or car</div>
+      <div class="lrow"><span class="swatch water"></span> Boat or ferry</div>
+      <div class="lrow"><span class="swatch air"></span> Flight</div>
+      <div class="lrow"><span class="swatch spur"></span> Undecided — not yet in the line</div>
+      <div class="lrow"><span class="dotmark"></span> Confirmed stop</div>
+      <div class="lrow"><span class="dotmark hollow"></span> Still deciding</div>
+    </div>
+
+    <div id="stop-list"></div>
+  </aside>
+
+  <div id="map"></div>
+  <div id="map-error">
+    <h2>The map couldn't load</h2>
+    <p>The map needs an internet connection the first time it opens, because it fetches the map tiles and the mapping library from the web.</p>
+    <p>Check your connection and reload the page. The full list of stops on the left works either way — clicking a row just won't move the map.</p>
+  </div>
+</div>
+
+<noscript style="display:block;padding:24px;font-family:sans-serif">
+  This map needs JavaScript turned on to work. The stop list won't appear without it.
+</noscript>
+
+<script>
+/* ============================================================================
+   THE JOURNEY DATA
+   ----------------------------------------------------------------------------
+   Every stop, in travel order. To edit the trip, edit this list — the map,
+   the sidebar and the day totals all rebuild themselves from it.
+
+   Each stop has:
+     leg      - which country/section it belongs to (groups the sidebar)
+     name     - what shows on the map
+     coords   - [latitude, longitude]
+     nights   - suggested nights to sleep there (0 = pass through, don't sleep)
+     why      - why this place earned a spot in the trip
+     do       - what to actually do there
+     food     - what to eat
+     arrive   - how you get here from the previous stop
+     mode     - how the LINE into this stop is drawn: ground | water | air
+     months   - the best months to be here
+     maybe    - true = undecided, drawn as a hollow dot on a dashed spur
+     spurFrom - for undecided stops: the name of the confirmed stop it hangs off
+     cost     - for undecided stops: extra days it would add to the trip
+============================================================================ */
+
+const journey = [
+
+  /* ========================= THAILAND — NORTH ========================= */
+  {
+    leg: "Thailand — North", name: "Bangkok", coords: [13.7563, 100.5018], nights: 4, mode: "air",
+    why: "Your entry point — flying straight in from Europe. An easy country to land in while you're still adjusting, and the best street food on the whole route.",
+    do: "Night food crawl through Chinatown (Yaowarat), Wat Pho and Wat Arun, a longtail boat down the canals, one rooftop bar.",
+    food: "The full spectrum — boat noodles, pad krapow, som tam, mango sticky rice.",
+    arrive: "Direct flight from Europe, roughly 11 hours.",
+    months: "Nov–Feb is the cool dry season and the best window of the year."
+  },
+  {
+    leg: "Thailand — North", name: "Chiang Mai", coords: [18.7883, 98.9853], nights: 4, mode: "air",
+    why: "Your northern base, and the fix for the mountain trekking you gave up when the Vietnamese far north came off the list. Use it as a base and day-trip out.",
+    do: "A hill trek with a local guide, an ethical elephant sanctuary, a cooking class, the old-city temples.",
+    food: "Khao soi (curry noodles) is the reason to be here. Also sai ua sausage and the Sunday walking-street stalls.",
+    arrive: "Fly direct from Bangkok, about 1h15m.",
+    months: "Nov–Feb is peak: cool, dry, clear. Avoid Mar–Apr, when farm burning wrecks the air."
+  },
+  {
+    leg: "Thailand — North", name: "Pai", coords: [19.3583, 98.4400], nights: 3, mode: "ground",
+    why: "A mountain town at the top of a hairpin road, and the trip's first proper slow-down. Small enough that you'll keep running into the same people.",
+    do: "Hot springs, the canyon at sunset, waterfalls, tubing the river. Rent a scooter.",
+    food: "A café and night-market scene far bigger than the town's size justifies.",
+    arrive: "Minibus from Chiang Mai — 3 hours and 762 curves. Take a motion sickness tablet.",
+    months: "Nov–Feb. Mornings are genuinely cold, so bring one warm layer."
+  },
+  {
+    leg: "Thailand — North", name: "Chiang Rai", coords: [19.9105, 99.8406], nights: 1, mode: "ground",
+    why: "A staging post, not a destination. You sleep here to catch the border run to the Mekong boat the next morning.",
+    do: "Wat Rong Khun (the White Temple) fills the afternoon you have.",
+    food: "Good northern Thai and a solid night bazaar.",
+    arrive: "Bus from Chiang Mai, about 3 hours.",
+    months: "Nov–Feb."
+  },
+
+  /* ============================== LAOS ============================== */
+  {
+    leg: "Laos", name: "Pakbeng", coords: [19.8878, 101.1500], nights: 1, mode: "water",
+    why: "The compulsory overnight halfway down the Mekong. Nobody comes here for Pakbeng — you come because the slow boat stops for the night.",
+    do: "Nothing. Eat, sleep, get back on the boat. That's the assignment.",
+    food: "Simple guesthouse Lao food. Keep expectations low.",
+    arrive: "Bus Chiang Rai → Chiang Khong, cross the Friendship Bridge to Huay Xai for your Laos visa on arrival, then day one of the two-day Mekong slow boat.",
+    months: "Nov–Feb. The river is high enough after the rains and the air is clear."
+  },
+  {
+    leg: "Laos", name: "Luang Prabang", coords: [19.8867, 102.1350], nights: 3, mode: "water",
+    why: "Touristy and still completely itself — the exact side of your crowds filter that passes. A UNESCO town of gilded temples between two rivers.",
+    do: "Kuang Si Falls (turquoise pools you can actually swim in), Mount Phousi at sunset, the dawn alms ceremony, the night market. Utopia bar for a social evening.",
+    food: "Laap, Mekong river fish, Luang Prabang sausage, and the best baguettes in Asia thanks to the French.",
+    arrive: "Day two of the slow boat delivers you straight into town.",
+    months: "Nov–Feb is the dry cool season and the best time to be here."
+  },
+  {
+    leg: "Laos", name: "Nong Khiaw", coords: [20.5747, 102.6167], nights: 2, mode: "ground",
+    why: "The karst mountains without the crowds. This is the quiet, dramatic Laos that people miss by only doing Luang Prabang.",
+    do: "The viewpoint hike above town — steep, an hour, and worth every step. Kayak the Nam Ou river, visit the caves.",
+    food: "Riverside Lao home cooking, and not much else.",
+    arrive: "Minivan from Luang Prabang, about 4 hours.",
+    months: "Nov–Feb for clear skies. This is also the region where a rabies shot earns its keep — you're a long way from a hospital."
+  },
+
+  /* ============================= VIETNAM ============================= */
+  {
+    leg: "Vietnam", name: "Hanoi", coords: [21.0278, 105.8342], nights: 3, mode: "air",
+    why: "The northern capital and the country's street-food headquarters. Effortless for meeting people solo — the hostels here do the work for you.",
+    do: "Walk the Old Quarter with no plan, the train street, Hoan Kiem lake at dawn, a bia hoi corner in the evening.",
+    food: "Bun cha, pho bo, banh cuon, egg coffee. Eat from plastic stools on the pavement.",
+    arrive: "Fly Luang Prabang → Hanoi, 1 hour. This is the one flight inside the region you can't avoid — the overland alternative is a 24-hour bus.",
+    months: "Nov–Dec is cool and dry. Jan–Feb gets grey and damp but stays comfortable."
+  },
+  {
+    leg: "Vietnam", name: "Ninh Binh", coords: [20.2506, 105.9744], nights: 2, mode: "ground",
+    why: "Halong Bay on land — the same limestone towers, but rising out of rice paddies and seen from a rowboat. Quieter and better than the sea version.",
+    do: "The Tam Coc or Trang An rowboat (rowed by foot, genuinely), cycle between the temples, climb Hang Mua's steps for the view.",
+    food: "Goat meat is the local speciality, plus com chay (crispy rice).",
+    arrive: "Train or bus from Hanoi, about 2 hours.",
+    months: "Nov–Dec. Book a social hostel — this is a place where your evening depends entirely on that choice."
+  },
+  {
+    leg: "Vietnam", name: "Mai Chau", coords: [20.6600, 105.0900], nights: 2, mode: "ground",
+    why: "Your gentle north, replacing Ha Giang. A green valley of White Thai stilt-house villages, reachable in an afternoon instead of a four-day motorbike loop.",
+    do: "Cycle the valley floor between villages, a short hill walk, stay in a stilt-house homestay.",
+    food: "Home-cooked Thai minority food at the homestay — sticky rice in bamboo, grilled river fish.",
+    arrive: "About 3 hours by road from Ninh Binh, cutting across the hills without detouring back through Hanoi.",
+    months: "Nov–Dec while the valley is still green and dry."
+  },
+  {
+    leg: "Vietnam", name: "Cat Ba / Lan Ha Bay", coords: [20.7280, 107.0480], nights: 2, mode: "ground",
+    why: "The quiet side of Halong Bay. Same karst seascape, a fraction of the boats, and you can kayak and climb it instead of photographing it from a cruise deck.",
+    do: "Kayak among the limestone islands, rock climb, hike in Cat Ba National Park.",
+    food: "Seafood straight off the boats in the floating villages.",
+    arrive: "This is the one backtrack in the loop — back toward Hanoi, on to Haiphong, then the ferry across. Half a day door to door.",
+    months: "Nov–Dec is clearer. December is low season, so it's quiet but the water's cold for swimming."
+  },
+  {
+    leg: "Vietnam", name: "Hue", coords: [16.4637, 107.5909], nights: 1, mode: "air",
+    why: "One night, mostly a launchpad for the scenic train to Da Nang — but the walled citadel is worth the half day you have anyway.",
+    do: "The walled citadel takes a half day, which is exactly what you have.",
+    food: "Bun bo Hue, the city's fiery beef noodle soup, is worth the stop on its own.",
+    arrive: "Fly Hanoi → Hue direct, about 1h15m. The ferry back from Cat Ba lands you near Hanoi anyway, so this picks up right where the north loop ends.",
+    months: "Feb onward is drier — Hue is the wettest city in Vietnam Oct–Dec, another reason to keep this to one night."
+  },
+  {
+    leg: "Vietnam", name: "Da Nang", coords: [16.0544, 108.2022], nights: 0, mode: "ground",
+    why: "Not a stop — the place you get off the train. You ride the Hue–Da Nang coastal leg because the ride itself is the attraction, then drive 30 minutes to Hoi An.",
+    do: "Nothing. Walk off the platform and into a car.",
+    food: "Grab a banh mi at the station.",
+    arrive: "The Hue → Da Nang train, 2.5 hours, hugging the coast with the ocean on one side and jungle on the other. Sit on the right-hand side heading south.",
+    months: "Any month in your window. The train runs regardless."
+  },
+  {
+    leg: "Vietnam", name: "Hoi An", coords: [15.8801, 108.3380], nights: 3, mode: "ground",
+    why: "The lantern-lit old town. You flipped this one back to yes, and it's the right call — it does everything Da Nang does, better, and the food alone justifies it.",
+    do: "A cooking class, get one thing tailored, cycle to the beach, the riverside lanterns after dark.",
+    food: "The best eating in Vietnam. Cao lau, white rose dumplings, banh mi from Phuong, com ga.",
+    arrive: "30 minutes by car from Da Nang station.",
+    months: "Feb–May is ideal. Dec–Jan is cooler with some rain but perfectly workable."
+  },
+  {
+    leg: "Vietnam", name: "Da Lat", coords: [11.9404, 108.4583], nights: 2, mode: "air",
+    why: "Cool-climate highlands and a break from the heat — pine forest, waterfalls and the country's best canyoning. Note it's your weakest stop socially, so lean on group activities.",
+    do: "Canyoning (abseiling down waterfalls — a group activity, which is the point), the lake and the pine trails. Then swap the bus out for the multi-day Easy Rider ride below.",
+    food: "Highland produce, artichoke tea, strawberry everything, excellent local wine by Vietnamese standards.",
+    arrive: "Fly Da Nang → Da Lat, about 1h10m (a 30-minute transfer from Hoi An to the airport) — quicker than the long bus.",
+    months: "Dec–Mar is dry season here. Bring a jacket — it genuinely gets cold at night."
+  },
+  {
+    leg: "Vietnam", name: "Mui Ne", coords: [10.9333, 108.2833], nights: 2, mode: "ground",
+    why: "The endpoint of the multi-day Easy Rider motorbike ride out of Da Lat — riding pillion behind a local guide through the Central Highlands over 2 days, ending at the coast. This is the ride your friend meant, not the single-day loop. Picked over Nha Trang as the finish: in December, Nha Trang is still tailing off its wet season, while Mui Ne stays reliably dry.",
+    do: "The red and white sand dunes at sunrise, the fishing village, the fairy stream, kitesurfing if the wind's up.",
+    food: "Seafood straight off the boats, fish sauce country — this is where it's made.",
+    arrive: "Two days on the back of a guide's motorbike from Da Lat, with an overnight stop en route. Luggage travels separately by car.",
+    months: "Dec is dry and reliable here, unlike the central coast further north."
+  },
+  {
+    leg: "Vietnam", name: "Ho Chi Minh City", coords: [10.8231, 106.6297], nights: 2, mode: "ground",
+    why: "The frenetic economic heart, and effortless for meeting people. Keep it short — it's loud and polluted, so hit the food and the history and move on.",
+    do: "The War Remnants Museum (heavy and essential), the Reunification Palace, a District 1 night out, a street-food tour.",
+    food: "Broken rice, banh xeo, com tam, the best iced coffee in the country.",
+    arrive: "Bus from Mui Ne, about 4–5 hours.",
+    months: "Dec–Apr is the southern dry season. You'll hit it perfectly."
+  },
+  {
+    leg: "Vietnam", name: "Mekong Delta", coords: [10.0452, 105.7469], nights: 2, mode: "ground",
+    why: "The river maze south of Saigon, and your exit route into Cambodia. Floating markets, orchards and a completely different pace from the city.",
+    do: "The Cai Rang floating market at dawn (go early, before the tour boats), a homestay in the orchards, cycle the small islands.",
+    food: "River fish, tropical fruit you've never seen before, hu tieu noodle soup.",
+    arrive: "Bus from Ho Chi Minh City to Can Tho, about 3 hours.",
+    months: "Dec–Apr is dry season. Ideal timing."
+  },
+
+  /* ============================= CAMBODIA ============================= */
+  {
+    leg: "Cambodia", name: "Kep / Kampot", coords: [10.6104, 104.1810], nights: 2, mode: "ground",
+    why: "Your calm, food-focused Cambodia stop, and the elegant way into the country. Crossing at Ha Tien lands you here directly and saves a full day of backtracking through Phnom Penh.",
+    do: "Kep crab market, a pepper farm tour, the Bokor Mountain road, kayaking the Kampot river at sunset.",
+    food: "Kampot pepper crab — one of the great dishes in Southeast Asia. Eat it in Kep, at the market, on a plastic chair.",
+    arrive: "Cross from the Mekong Delta at Ha Tien straight into Cambodia, then a short bus. Less-travelled than the Saigon route and much better routing.",
+    months: "Nov–Feb is dry and cool. Peak season, correctly."
+  },
+  {
+    leg: "Cambodia", name: "Phnom Penh", coords: [11.5564, 104.9282], nights: 2, mode: "ground",
+    why: "One sobering day, because you can't understand the country without it. Real city energy on top of that, and a good riverfront.",
+    do: "Tuol Sleng (S-21) and the Killing Fields — do both in one day, then stop. The Royal Palace and the riverfront in the evening.",
+    food: "Excellent Khmer food and a genuinely good bar scene along the river.",
+    arrive: "Bus from Kampot, about 4 hours.",
+    months: "Nov–Feb, the cool dry season."
+  },
+  {
+    leg: "Cambodia", name: "Siem Reap", coords: [13.3671, 103.8448], nights: 4, mode: "air",
+    why: "Angkor is the whole reason, and the clearest case of crowds being worth it anywhere on your trip. Four nights lets you do it properly instead of in one exhausted day.",
+    do: "Sunrise at Angkor Wat, then Bayon and Ta Prohm early. Spend a second day on the remote temples — Beng Mealea, Koh Ker, Banteay Srei — where you'll be nearly alone. Pub Street for the social evening.",
+    food: "Fish amok, lok lak, and a surprisingly good modern Khmer restaurant scene.",
+    arrive: "Fly Phnom Penh → Siem Reap, about 45 minutes. The bus is 6 hours — over your cutoff, and there's no reason to take it.",
+    months: "Nov–Feb is the best window: dry, cooler, and the moats still hold water for the reflections."
+  },
+
+  /* ======================= THAILAND — ANDAMAN ======================= */
+  {
+    leg: "Thailand — Andaman", name: "Khao Sok", coords: [8.9167, 98.5333], nights: 3, mode: "air",
+    why: "A rainforest older than the Amazon around an emerald lake, and the one Thai stop unlike anything else on your trip. It also feeds the hiking priority the islands don't.",
+    do: "Kayak the lake between limestone towers, sleep in a floating raft house, a jungle trek, the caves. Dawn wildlife safari on the water.",
+    food: "Home-style Thai cooked at the raft houses. Simple and very good.",
+    arrive: "Fly Siem Reap → Bangkok (1h), then Bangkok → Krabi or Surat Thani, then a bus inland.",
+    months: "Nov–Feb. The lake is full after the rains and the trails are passable."
+  },
+  {
+    leg: "Thailand — Andaman", name: "Ko Lanta", coords: [7.6167, 99.0500], nights: 5, mode: "ground",
+    why: "Your island base, and the smartest structural decision in the trip. Sit here and day-trip out instead of island-hopping with a backpack. Calm, long beaches, and where you get Open Water certified.",
+    do: "Get scuba certified over 3–4 days, day-trip the Trang islands, rent a scooter for the quiet south end, sunset at a beach bar.",
+    food: "Southern coconut curries, roti, and fresh seafood grilled on the sand.",
+    arrive: "Bus and ferry from Krabi, about 3 hours all in.",
+    months: "Nov–Apr is the dry Andaman season. January is peak and perfect."
+  },
+  {
+    leg: "Thailand — Andaman", name: "Ko Jum", coords: [7.8167, 99.0333], nights: 0, mode: "water",
+    why: "A barely-developed hammock island a short boat ride from Lanta. Confirmed and free — a day trip from your base, so it costs no nights.",
+    do: "Nothing, on purpose. Beach walks and near-zero crowds.",
+    food: "Simple beach-shack seafood.",
+    arrive: "Short boat from Ko Lanta, there and back the same day, before continuing on to Ko Kradan.",
+    months: "Nov–Apr."
+  },
+  {
+    leg: "Thailand — Andaman", name: "Ko Kradan", coords: [7.3167, 99.2500], nights: 1, mode: "water",
+    why: "Often voted Thailand's best beach, and one night here beats a punishing round-trip day boat from Lanta. Snorkelling straight off the sand.",
+    do: "Snorkel from the beach, and take in the Emerald Cave at Ko Muk on the way — a swim through a dark sea tunnel into a hidden cliff-ringed beach.",
+    food: "A handful of beach restaurants. That's the entire island.",
+    arrive: "Boat from Ko Lanta, roughly 2 hours, usually as part of the four-island Trang tour.",
+    months: "Nov–Apr. Outside that the boats stop running."
+  },
+  {
+    leg: "Thailand — Andaman", name: "Ko Lipe", coords: [6.4889, 99.3025], nights: 3, mode: "water",
+    why: "The clearest water in Thailand, and your bridge into Malaysia. It earns its place because of the ferry — as a standalone third island it would be a repeat.",
+    do: "Snorkel the small islands ringing it, walk between the three beaches, sunset on Sunrise Beach.",
+    food: "Walking Street seafood BBQ — pick your fish, watch it grilled.",
+    arrive: "Ferry from Ko Lanta via Ko Ngai, most of a day.",
+    months: "Nov–Apr only. The island effectively shuts in low season."
+  },
+
+  /* ============================= MALAYSIA ============================= */
+  {
+    leg: "Malaysia", name: "Langkawi", coords: [6.3500, 99.8000], nights: 1, mode: "water",
+    why: "Your landing point in Malaysia, not a destination. One night to clear the border and catch the boat south.",
+    do: "The cable car and sky bridge if you have the afternoon. Otherwise rest.",
+    food: "Duty-free beer, which after Thailand's prices is a novelty.",
+    arrive: "International ferry Ko Lipe → Langkawi, 1.5 hours. Runs Oct–May, so February is fine.",
+    months: "Nov–Mar is dry on this coast."
+  },
+  {
+    leg: "Malaysia", name: "George Town, Penang", coords: [5.4141, 100.3288], nights: 4, mode: "water",
+    why: "Locked in for the food. This is arguably the best eating city in Southeast Asia, and for someone food-forward it's the single strongest reason to be in Malaysia.",
+    do: "Eat, then eat again. Street art in the old town, Penang Hill, Kek Lok Si temple, a Peranakan mansion.",
+    food: "Char kway teow, assam laksa, nasi kandar, cendol, hokkien mee. Eat at hawker centres — Gurney Drive, Chulia Street, New Lane.",
+    arrive: "Ferry from Langkawi (about 3 hours) or a 40-minute flight.",
+    months: "Dec–Feb is the drier window on the west coast."
+  },
+  {
+    leg: "Malaysia", name: "Cameron Highlands", coords: [4.4700, 101.3800], nights: 2, mode: "ground",
+    why: "Tea plantations and cool air in the middle of the peninsula. A green, quiet break between two food cities.",
+    do: "Walk the tea estates, the mossy forest trail, one of the numbered jungle trails.",
+    food: "Tea and scones, oddly, plus excellent steamboat in the evening cold.",
+    arrive: "Bus from Penang, about 5 hours up into the hills.",
+    months: "Dec–Feb. Bring a fleece — it drops to 10°C at night."
+  },
+  {
+    leg: "Malaysia", name: "Ipoh", coords: [4.5975, 101.0901], nights: 2, mode: "ground",
+    why: "A quiet foodie town most people skip on the way to Kuala Lumpur. Colonial architecture, limestone caves, and no crowds.",
+    do: "The old town heritage walk, the cave temples in the surrounding limestone hills, a hot spring.",
+    food: "White coffee (invented here), bean sprout chicken, and some of the best dim sum in Malaysia.",
+    arrive: "Bus or train down from Cameron Highlands, about 2 hours.",
+    months: "Dec–Feb."
+  },
+  {
+    leg: "Malaysia", name: "Kuala Lumpur", coords: [3.1390, 101.6869], nights: 3, mode: "ground",
+    why: "The transit hub you can't route around, and a genuinely good food and city stop in its own right. Also where the Borneo decision gets made or dropped.",
+    do: "Batu Caves, the Petronas Towers at night, Chinatown and the Jalan Alor food street, a rooftop bar.",
+    food: "Nasi lemak, banana leaf curry, satay, and the best Indian food outside India.",
+    arrive: "Train (ETS) or bus from Ipoh, about 2.5 hours.",
+    months: "Dec–Feb is fine, though KL is humid and rainy year round."
+  },
+  {
+    leg: "Singapore", name: "Singapore", coords: [1.3521, 103.8198], nights: 2, mode: "air",
+    why: "Two days, mostly because it's on the way and it's the cleanest place to fly onward from. A hard reset after four months of Southeast Asia.",
+    do: "Gardens by the Bay, the hawker centres, a walk through Kampong Glam and Little India.",
+    food: "Hainanese chicken rice, chilli crab, laksa, kaya toast. Hawker centres — Maxwell, Old Airport Road, Tekka.",
+    arrive: "Direct flight from Kuching, or bus from KL if Borneo drops out.",
+    months: "Any month. It's the same weather every day of the year."
+  },
+
+  /* =========================== PHILIPPINES =========================== */
+  {
+    leg: "Philippines", name: "Manila", coords: [14.5995, 120.9842], nights: 1, mode: "air",
+    why: "One transit night, no more. It's the gateway to Palawan and nothing else on this trip.",
+    do: "Intramuros if your flight timing gives you an afternoon. Otherwise sleep near the airport.",
+    food: "Get a proper Filipino meal in — sisig, adobo, kare-kare — before the islands.",
+    arrive: "Direct flight from Singapore, 3.5 hours.",
+    months: "Jan–Apr is the dry season and outside the typhoon window entirely."
+  },
+  {
+    leg: "Philippines", name: "Port Barton", coords: [10.4500, 119.2333], nights: 3, mode: "air",
+    why: "Your quiet Palawan stop, and the correction to lumping it in with El Nido. Where El Nido is commercialising, this is the opposite — a sleepy bay with barely any development.",
+    do: "Very little, deliberately. Island-hop to near-empty sandbars, snorkel with turtles, walk to the waterfalls.",
+    food: "Simple beach-shack seafood, grilled that morning.",
+    arrive: "Fly Manila → Puerto Princesa, then about 3.5 hours by van north.",
+    months: "Jan–Apr. February is the sweet spot — dry, calm seas, pre-Easter crowds haven't arrived."
+  },
+  {
+    leg: "Philippines", name: "El Nido", coords: [11.1800, 119.4160], nights: 3, mode: "ground",
+    why: "The lagoons are genuinely stunning and the town is drifting toward Bali. So treat it as your social and logistics base, sleep away from the strip, and spend your days on the water.",
+    do: "Tour A for the Big and Small Lagoons, Nacpan Beach, kayak into the lagoons at opening time before the boats mass.",
+    food: "Good traveller restaurants and fresh grilled seafood. Not the reason you're here.",
+    arrive: "Van from Port Barton, about 3 hours up the coast.",
+    months: "Jan–Apr. Go into the lagoons at first light — it's the difference between magic and a queue."
+  },
+  {
+    leg: "Philippines", name: "Tao Expedition", coords: [11.4833, 119.8500], nights: 5, mode: "water",
+    why: "The single best-fitting item in your entire trip. Five days on a small boat with about twenty people, camping on islands no day tour reaches, no wifi. It solves social, no-crowds and snorkelling at once, and it replaces the El Nido–Coron flight so it pays for part of itself.",
+    do: "Snorkel reefs with nobody else on them, sleep in beach huts, eat what the crew cooks, get to know twenty strangers properly.",
+    food: "Cooked onboard from what they buy and catch. Consistently better than it has any right to be.",
+    arrive: "Departs El Nido by boat. Book Tao Philippines or another well-reviewed operator — this is the one booking where the cheapest option is genuinely a mistake.",
+    months: "Jan–Apr for calm seas. Book well ahead; the good departures sell out months out."
+  },
+  {
+    leg: "Philippines", name: "Coron", coords: [11.9983, 120.2042], nights: 3, mode: "water",
+    why: "You're here for the underwater Coron, not the tourist Coron. The town is forgettable and the packaged island-hopping is a conveyor belt — but the WWII shipwrecks sit shallow enough for your level, and that's a genuine world-class thing.",
+    do: "Dive or snorkel the Lusong gunboat and Skeleton wreck. Kayangan Lake at dawn before the boats. Twin Lagoon early. Skip the standard hopping tour.",
+    food: "Decent seafood, and the best calamansi juice you'll have.",
+    arrive: "The Tao expedition ends here. Home from here: fly Coron → Manila, then onward home via one Gulf or Asian connection. The return isn't booked, which is exactly what gives you room if the trip runs long.",
+    months: "Jan–Apr. Dawn is the whole strategy in Coron — go early and you get it to yourself. This is your last stop before flying home."
+  },
+
+  /* ==================== UNDECIDED — DASHED SPURS ==================== */
+  {
+    leg: "Still deciding", name: "Ayutthaya", coords: [14.3532, 100.5488], nights: 0, maybe: true,
+    spurFrom: "Bangkok", cost: 0, mode: "ground",
+    why: "The answer to feeling like Bangkok is just an arrival lounge. Thailand's ruined former capital — temple spires and headless Buddha statues in banyan roots — as an easy day trip that doesn't cost you a night.",
+    do: "Wat Mahathat (the Buddha head in the tree roots), Wat Chaiwatthanaram at sunset, rent a bike to cover the ruins.",
+    food: "Boat noodles by the river, the town's specialty.",
+    arrive: "Train from Bangkok, about 1.5 hours each way — there and back the same day.",
+    months: "Nov–Feb, cool and dry."
+  },
+  {
+    leg: "Still deciding", name: "Kanchanaburi", coords: [14.0227, 99.5328], nights: 2, maybe: true,
+    spurFrom: "Bangkok", cost: 2, mode: "ground",
+    why: "Another answer to the same restlessness as Ayutthaya, but this one earns an overnight rather than a day trip — the Bridge on the River Kwai and Death Railway history, plus Erawan's seven-tiered waterfall pools you can actually swim in.",
+    do: "Walk the bridge and the Death Railway museum, ride the railway itself along the cliff edge, swim the tiered pools at Erawan National Park, Hellfire Pass.",
+    food: "River-view guesthouses with decent Thai food; nothing to travel for on its own.",
+    arrive: "Train or bus from Bangkok, about 2.5–3 hours.",
+    months: "Nov–Feb is cool and dry, and Erawan's pools are clearest before the rains fill them with silt."
+  },
+  {
+    leg: "Still deciding", name: "Malacca", coords: [2.1896, 102.2501], nights: 2, maybe: true,
+    spurFrom: "Kuala Lumpur", cost: 2, mode: "ground",
+    why: "A stop along the way, as you put it. The catch is routing, not days: Malacca sits on the KL–Singapore line, and the Borneo detour lifts you off that line entirely. It works cleanly only if Sarawak drops.",
+    do: "The Dutch colonial old town, Jonker Street night market, the riverside.",
+    food: "Nyonya cuisine — the Chinese-Malay hybrid you won't get elsewhere. Chicken rice balls.",
+    arrive: "Bus from Kuala Lumpur, 2 hours.",
+    months: "Dec–Feb."
+  },
+  {
+    leg: "Still deciding", name: "Kuching", coords: [1.5535, 110.3593], nights: 3, maybe: true,
+    spurFrom: "Kuala Lumpur", cost: 3, mode: "air",
+    why: "Borneo, and directly competing with the Luzon mountains for the same days — both are culture plus moderate hiking with few tourists. A charming small city with real Dayak culture and great food.",
+    do: "The waterfront and old town, Sarawak Cultural Village, a longhouse visit, the museums.",
+    food: "Sarawak laksa (Anthony Bourdain's breakfast of champions), kolo mee, midin fern.",
+    arrive: "Fly Kuala Lumpur → Kuching, 2 hours.",
+    months: "Mar–Sep. Your February timing is the problem — Dec–Feb is Kuching's wettest stretch of the year."
+  },
+  {
+    leg: "Still deciding", name: "Bako National Park", coords: [1.7167, 110.4667], nights: 2, maybe: true,
+    spurFrom: "Kuching", cost: 2, mode: "water",
+    why: "Easy coastal hiking with proboscis monkeys an hour from Kuching. The reason to go to Sarawak at all, alongside the food.",
+    do: "The coastal trails, the sea stack at Telok Pandan Kecil, proboscis monkeys and bearded pigs at dusk.",
+    food: "The park canteen. Bring snacks.",
+    arrive: "Bus then an open boat across from Kuching — and that boat is the risk. It gets cancelled in rough seas, which is exactly what Dec–Feb brings.",
+    months: "Mar–Sep. February carries real cancellation risk."
+  },
+  {
+    leg: "Still deciding", name: "Pinatubo", coords: [15.1430, 120.3490], nights: 1, maybe: true,
+    spurFrom: "Manila", cost: 1, mode: "ground",
+    why: "A crater-lake volcano hike. Its cost collapses to one day and zero detour if the Luzon mountains stay in, because the jump-off in Tarlac is directly on the road north from Manila to Banaue. It lives or dies with Luzon.",
+    do: "The 4x4 convoy across the lahar fields, then a 2-hour walk up to the crater lake.",
+    food: "Whatever the tour packs. Nothing to write home about.",
+    arrive: "Van north from Manila to Santa Juliana, Tarlac — on the way to Banaue.",
+    months: "Dec–Apr is the dry season and the only time the route is reliably open."
+  },
+  {
+    leg: "Still deciding", name: "Banaue", coords: [16.9100, 121.0600], nights: 2, maybe: true,
+    spurFrom: "Manila", cost: 2, mode: "ground",
+    why: "Living Ifugao rice terraces, two thousand years old and still farmed. Worth the crowds, and genuinely meet-the-locals country. Competing with Sarawak for the same days — but February here is dry and reliable, which Sarawak isn't.",
+    do: "The viewpoints, a guided walk into the terraces, an Ifugao village visit.",
+    food: "Mountain Filipino cooking — pinikpikan, heirloom rice, strong local coffee.",
+    arrive: "Night bus from Manila, 9–10 hours. Ohayami or Coda Lines.",
+    months: "Dec–Apr is dry. Feb is good."
+  },
+  {
+    leg: "Still deciding", name: "Batad", coords: [16.9300, 121.1300], nights: 2, maybe: true,
+    spurFrom: "Banaue", cost: 2, mode: "ground",
+    why: "The amphitheatre terraces — the postcard image — and harder to reach, which means far fewer people than Banaue. Worth it, and quieter.",
+    do: "Hike in (there's no road to the village itself), stay overnight in the amphitheatre, walk down to Tappiya Falls.",
+    food: "Homestay cooking. Basic and good after the walk.",
+    arrive: "Jeepney from Banaue to the saddle, then a 45-minute walk down.",
+    months: "Dec–Apr. Avoid the wet months — the trails become genuinely dangerous."
+  },
+  {
+    leg: "Still deciding", name: "Sagada", coords: [17.0850, 120.9000], nights: 2, maybe: true,
+    spurFrom: "Banaue", cost: 2, mode: "ground",
+    why: "A cool mountain town with hanging coffins, caves, and a small traveller scene. Quiet and local — the decompress end of the Luzon cluster.",
+    do: "The hanging coffins, Sumaguing cave connection, the Kiltepan sunrise viewpoint, echo valley walk.",
+    food: "Etag (smoked pork), lemon pie, and good mountain coffee.",
+    arrive: "Jeepney from Banaue over the mountains, about 4 hours.",
+    months: "Dec–Apr. Cold at night — pack the same layer you used in Pai."
+  },
+  {
+    leg: "Still deciding", name: "Puerto Galera", coords: [13.4980, 120.9540], nights: 4, maybe: true,
+    spurFrom: "Manila", cost: 4, mode: "water",
+    why: "The costly maybe. Strong diving in the Verde Island Passage, but Mindoro sits on neither the Palawan route nor the road north, so it's four days including transit for diving you'll have covered off Ko Lanta.",
+    do: "Dive the Verde Island Passage, the sabang wrecks, Tamaraw falls. Base outside the Sabang strip.",
+    food: "Decent seafood, expat-oriented restaurants.",
+    arrive: "Bus from Manila to Batangas, then a ferry across. Half a day each way.",
+    months: "Nov–May is the dive season. Decide in-country once you know how the Palawan diving went."
+  }
+];
+
+/* ============================================================================
+   BUILD THE MAP AND SIDEBAR
+============================================================================ */
+
+// If Leaflet didn't load (usually no internet), show a human message instead of a blank page.
+if (typeof L === "undefined") {
+  document.getElementById("map").style.display = "none";
+  document.getElementById("map-error").style.display = "block";
+}
+
+const confirmedStops = journey.filter(s => !s.maybe);
+const maybeStops     = journey.filter(s =>  s.maybe);
+
+/* ---------- Day budget ---------- */
+const TRIP_LABEL = "Winter 2026/27";
+const DAYS_AVAILABLE = 106; // trip length in days
+
+const confirmedNights = confirmedStops.reduce((sum, s) => sum + s.nights, 0);
+// Travel days: every leg where you change country or fly costs roughly a day beyond the nights.
+const TRAVEL_DAYS = 14;
+const coreTotal = confirmedNights + TRAVEL_DAYS;
+const maybeTotal = maybeStops.reduce((sum, s) => sum + (s.cost || 0), 0);
+const slack = DAYS_AVAILABLE - coreTotal;
+
+document.getElementById("budget").innerHTML = `
+  <div class="row"><span class="k">${TRIP_LABEL}</span><span class="v">${DAYS_AVAILABLE} days</span></div>
+  <div class="row"><span class="k">Nights in the confirmed chain</span><span class="v">${confirmedNights}</span></div>
+  <div class="row"><span class="k">Travel days between them</span><span class="v">~${TRAVEL_DAYS}</span></div>
+  <div class="row total"><span class="k">Confirmed chain total</span>
+    <span class="v ${slack >= 0 ? "fits" : "over"}">${coreTotal} days${slack >= 0 ? ` · ${slack} spare` : ` · ${-slack} over`}</span></div>
+  <div class="row"><span class="k">Undecided stops would add</span><span class="v over">+${maybeTotal}</span></div>
+  <div class="note">The confirmed chain fits your window almost exactly, with about ${slack} ${slack === 1 ? "day" : "days"} spare.
+  Every undecided stop has to be paid for by cutting something already in the line.</div>
+`;
+
+/* ---------- Map ---------- */
+let map, layers = { core: null, spurs: null, coreDots: null, spurDots: null };
+const markerByName = {};
+
+if (typeof L !== "undefined") {
+  map = L.map("map", { zoomControl: true, scrollWheelZoom: true }).setView([12.5, 106], 5);
+
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+    attribution: '&copy; OpenStreetMap &copy; CARTO',
+    subdomains: "abcd", maxZoom: 19
+  }).addTo(map);
+
+  layers.core     = L.layerGroup().addTo(map);
+  layers.coreDots = L.layerGroup().addTo(map);
+  layers.spurs    = L.layerGroup().addTo(map);
+  layers.spurDots = L.layerGroup().addTo(map);
+
+  const strokeFor = (mode) => {
+    if (mode === "water") return { color: "#0071e3", weight: 2.6, opacity: 0.85 };
+    if (mode === "air")   return { color: "#8e8e93", weight: 2, opacity: 0.8, dashArray: "2,9" };
+    return { color: "#1d1d1f", weight: 2.4, opacity: 0.7 };
+  };
+
+  // Draw the solid journey line, segment by segment, coloured by how you travel.
+  for (let i = 1; i < confirmedStops.length; i++) {
+    const from = confirmedStops[i - 1], to = confirmedStops[i];
+    L.polyline([from.coords, to.coords], strokeFor(to.mode))
+      .bindTooltip(`${from.name} → ${to.name}`, { sticky: true })
+      .addTo(layers.core);
+  }
+
+  // Draw dashed spurs from each undecided stop back to the confirmed stop it hangs off.
+  maybeStops.forEach(s => {
+    const anchor = journey.find(j => j.name === s.spurFrom);
+    if (anchor) {
+      L.polyline([anchor.coords, s.coords],
+        { color: "#c7900d", weight: 1.8, opacity: 0.75, dashArray: "1,7" })
+        .bindTooltip(`Undecided — would branch from ${anchor.name}`, { sticky: true })
+        .addTo(layers.spurs);
+    }
+  });
+
+  // Popups
+  const popupHtml = (s, order) => `
+    <div class="pop-head">
+      <span class="pop-name">${s.name}</span>
+      <span class="pop-nights">${s.nights === 0 ? "pass through" : s.nights + (s.nights === 1 ? " night" : " nights")}</span>
+    </div>
+    <div class="pop-country">${order ? "Stop " + order + " · " : ""}${s.leg}</div>
+    <div class="pop-why">${s.why}</div>
+    <div class="pop-field"><span class="lab">Do</span><span class="val">${s.do}</span></div>
+    <div class="pop-field"><span class="lab">Eat</span><span class="val">${s.food}</span></div>
+    <div class="pop-field"><span class="lab">Getting&nbsp;here</span><span class="val">${s.arrive}</span></div>
+    <div class="pop-months"><strong>Best months:</strong> ${s.months}</div>
+    ${s.maybe ? `<div class="pop-maybe">Not yet in the line. Adding it costs ${s.cost} ${s.cost === 1 ? "day" : "days"}${s.cost === 0 ? " — it's a day trip, so it's free" : ""}.</div>` : ""}
+  `;
+
+  // Confirmed dots
+  confirmedStops.forEach((s, i) => {
+    const size = s.nights >= 4 ? 15 : s.nights === 0 ? 8 : 11;
+    const m = L.marker(s.coords, {
+      icon: L.divIcon({
+        className: "", iconSize: [size, size], iconAnchor: [size / 2, size / 2],
+        html: `<div class="marker-dot" style="width:${size}px;height:${size}px;background:${s.nights === 0 ? "#a1a1a6" : "#1d1d1f"};border:2.5px solid #fff"></div>`
+      })
+    })
+      .bindPopup(popupHtml(s, i + 1), { maxWidth: 310 })
+      .bindTooltip(s.name, { className: "stop-label", direction: "right", offset: [9, 0] })
+      .addTo(layers.coreDots);
+    markerByName[s.name] = m;
+  });
+
+  // Undecided dots — hollow
+  maybeStops.forEach(s => {
+    const m = L.marker(s.coords, {
+      icon: L.divIcon({
+        className: "", iconSize: [12, 12], iconAnchor: [6, 6],
+        html: `<div class="marker-dot" style="width:12px;height:12px;background:#fff;border:2.5px solid #c7900d"></div>`
+      })
+    })
+      .bindPopup(popupHtml(s, null), { maxWidth: 310 })
+      .bindTooltip(s.name, { className: "stop-label maybe", direction: "right", offset: [9, 0] })
+      .addTo(layers.spurDots);
+    markerByName[s.name] = m;
+  });
+
+  map.fitBounds(L.latLngBounds(journey.map(s => s.coords)), { padding: [45, 45] });
+}
+
+/* ---------- Sidebar list ---------- */
+const listEl = document.getElementById("stop-list");
+let html = "", currentLeg = null, order = 0;
+
+journey.forEach(s => {
+  if (s.leg !== currentLeg) {
+    currentLeg = s.leg;
+    const legStops = journey.filter(j => j.leg === currentLeg);
+    const legNights = legStops.reduce((sum, j) => sum + j.nights, 0);
+    html += `<div class="leg-label"><span>${currentLeg}</span><span class="nights">${legNights} nights</span></div>`;
+  }
+  if (!s.maybe) order++;
+  html += `
+    <div class="stop ${s.maybe ? "is-maybe" : ""}" data-name="${s.name}">
+      <div class="top">
+        <span class="idx">${s.maybe ? "·" : order}</span>
+        <span class="name">${s.name}</span>
+        ${s.maybe ? `<span class="maybe-tag">+${s.cost}d</span>`
+                  : `<span class="nights">${s.nights === 0 ? "pass through" : s.nights + "n"}</span>`}
+      </div>
+      <div class="why">${s.why.split(". ")[0]}.</div>
+    </div>`;
+});
+listEl.innerHTML = html;
+
+// Clicking a row flies the map to that stop and opens its popup.
+listEl.querySelectorAll(".stop").forEach(row => {
+  row.addEventListener("click", () => {
+    const m = markerByName[row.dataset.name];
+    if (!m || !map) return;  // map failed to load — the list still reads fine
+    map.flyTo(m.getLatLng(), 8, { duration: 0.7 });
+    m.openPopup();
+  });
+});
+
+/* ---------- Toggle undecided stops ---------- */
+document.getElementById("show-maybes").addEventListener("change", (e) => {
+  const on = e.target.checked;
+  if (map) {
+    [layers.spurs, layers.spurDots].forEach(layer => {
+      if (on) map.addLayer(layer); else map.removeLayer(layer);
+    });
+  }
+  listEl.querySelectorAll(".stop.is-maybe").forEach(row => {
+    row.style.display = on ? "" : "none";
+  });
+  // Hide the "Still deciding" header too when the section is empty.
+  const headers = listEl.querySelectorAll(".leg-label");
+  headers.forEach(h => {
+    if (h.textContent.startsWith("Still deciding")) h.style.display = on ? "" : "none";
+  });
+});
+</script>
+</body>
+</html>
