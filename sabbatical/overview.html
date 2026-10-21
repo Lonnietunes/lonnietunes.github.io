@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Overview — Sabbatical</title>
+<style>
+  :root {
+    --text: #1d1d1f; --muted: #6e6e73; --faint: #a1a1a6;
+    --line: #e5e5e7; --wash: #fafafa;
+    --red: #c8322a; --redwash: #fdf2f1;
+    --amber: #b07503; --amberwash: #fdf8ef;
+    --blue: #0071e3; --bluewash: #f1f7fe;
+    --green: #1d8a45;
+  }
+  * { box-sizing: border-box; -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; padding: 0 0 60px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text); background: #fff; line-height: 1.55; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 700px; margin: 0 auto; padding: 0 16px; }
+
+  /* Top bar: links between the four pages */
+  .topnav { height: 52px; display: flex; align-items: center; gap: 6px; padding: 0 18px;
+    border-bottom: 1px solid var(--line); background: #fff; overflow-x: auto; }
+  .topnav .brand { font-weight: 650; font-size: 14px; margin-right: 12px; white-space: nowrap; }
+  .topnav a { text-decoration: none; color: var(--muted); font-size: 13px; font-weight: 560;
+    padding: 7px 13px; border-radius: 999px; white-space: nowrap; }
+  .topnav a:hover { background: #f0f0f2; color: var(--text); }
+  .topnav a.on { background: var(--text); color: #fff; }
+
+  header { padding: 30px 0 16px; }
+  h1 { font-size: 25px; font-weight: 650; letter-spacing: -0.025em; margin: 0 0 5px; }
+  .sub { font-size: 13.5px; color: var(--muted); margin: 0; }
+
+  /* Sticky jump links within the page */
+  .jump { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,0.94);
+    backdrop-filter: saturate(180%) blur(14px); border-bottom: 1px solid var(--line); padding: 10px 0; }
+  .jump .wrap { display: flex; gap: 7px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .jump a { flex-shrink: 0; text-decoration: none; color: var(--text); font-size: 13px; font-weight: 560;
+    padding: 7px 13px; border: 1px solid var(--line); border-radius: 999px; background: #fff; white-space: nowrap; }
+
+  section { padding: 28px 0 6px; scroll-margin-top: 62px; }
+  h2 { font-size: 19px; font-weight: 640; letter-spacing: -0.015em; margin: 0 0 3px;
+       display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+  h2 .tag { font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; padding: 2px 8px; border-radius: 20px; }
+  .tag.mosq { background: var(--bluewash); color: var(--blue); }
+  .tag.fever { background: var(--amberwash); color: var(--amber); }
+  .tag.bite { background: var(--redwash); color: var(--red); }
+  .lede { font-size: 14px; color: var(--muted); margin: 0 0 16px; }
+
+  .card { border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin-bottom: 14px; }
+  .card.wash { background: var(--wash); }
+  .card h3 { font-size: 14.5px; font-weight: 620; margin: 0 0 9px; }
+
+  .alarm { border: 1.5px solid rgba(200,50,42,0.35); background: var(--redwash); border-radius: 14px; padding: 16px 18px; margin-bottom: 14px; }
+  .alarm h3 { font-size: 14px; font-weight: 700; color: var(--red); margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .alarm .why { font-size: 13px; color: #8a231d; margin: 0 0 11px; }
+  .alarm ul { margin: 0; padding-left: 19px; }
+  .alarm li { font-size: 14px; margin-bottom: 5px; font-weight: 500; }
+
+  .warn { border: 1.5px solid rgba(176,117,3,0.3); background: var(--amberwash); border-radius: 14px; padding: 15px 18px; margin-bottom: 14px; }
+  .warn h3 { font-size: 14px; font-weight: 700; color: var(--amber); margin: 0 0 5px; }
+  .warn p { font-size: 13.5px; margin: 0; color: #7a5202; }
+
+  ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; }
+  ol.steps li { counter-increment: s; position: relative; padding: 0 0 14px 40px; font-size: 14.5px; }
+  ol.steps li:last-child { padding-bottom: 0; }
+  ol.steps li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--text); color: #fff; font-size: 13px; font-weight: 650; display: flex; align-items: center; justify-content: center; }
+  ol.steps li .detail { display: block; font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+  ul.plain { margin: 0; padding-left: 19px; }
+  ul.plain li { font-size: 14px; margin-bottom: 6px; }
+
+  .yesno { display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0 0; }
+  .pill { font-size: 13.5px; font-weight: 580; padding: 8px 13px; border-radius: 10px; flex: 1; min-width: 150px; }
+  .pill.yes { background: rgba(29,138,69,0.09); color: var(--green); }
+  .pill.no  { background: var(--redwash); color: var(--red); }
+
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  th, td { text-align: left; font-size: 13.5px; padding: 9px 10px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--faint); font-weight: 650; }
+  td.num { font-variant-numeric: tabular-nums; font-weight: 620; white-space: nowrap; }
+
+  .footnote { font-size: 12.5px; color: var(--muted); line-height: 1.55; margin-top: 8px; }
+  hr { border: none; border-top: 1px solid var(--line); margin: 30px 0 0; }
+
+  @media print {
+    .topnav, .jump { display: none; }
+    section { page-break-inside: avoid; padding-top: 16px; }
+    .alarm, .warn, .card { break-inside: avoid; }
+  }
+</style>
+<style>
+  /* Extra styles for this page */
+  .controls { padding: 4px 0 4px; }
+  .controls .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 10px; }
+  .controls .flabel { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
+  .chip { font: inherit; font-size: 12.5px; font-weight: 560; padding: 6px 11px; border-radius: 999px;
+    border: 1px solid var(--line); background: #fff; color: var(--text); cursor: pointer; }
+  .chip:hover { background: #f0f0f2; }
+  .chip.on { background: var(--text); color: #fff; border-color: var(--text); }
+  .chip .count { color: var(--faint); font-weight: 500; margin-left: 3px; }
+  .chip.on .count { color: rgba(255,255,255,0.6); }
+  .chip.maybe-toggle.on { background: #c7900d; border-color: #c7900d; }
+  .linkbtn { border: none; background: none; color: var(--blue); font-size: 12.5px; cursor: pointer; }
+
+  .leg { padding: 26px 0 0; scroll-margin-top: 62px; }
+  .leg h2 { display: flex; justify-content: space-between; align-items: baseline; }
+  .leg h2 .n { font-size: 12.5px; color: var(--faint); font-weight: 500; }
+
+  .spot { border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin: 12px 0; transition: opacity 0.15s; }
+  .spot.beat { border-color: rgba(208,52,44,0.4); box-shadow: inset 3px 0 0 #d0342c; }
+  .spot.maybe { border-style: dashed; border-color: rgba(199,144,13,0.55); }
+  .spot.transit { background: var(--wash); }
+  .spot.dimmed { opacity: 0.2; }
+  .spot .top { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+  .spot .idx { font-size: 11px; color: var(--faint); font-weight: 650; min-width: 18px; font-variant-numeric: tabular-nums; }
+  .spot .name { font-size: 17px; font-weight: 650; letter-spacing: -0.01em; }
+  .spot .nights { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .spot .acts { font-size: 11.5px; color: var(--faint); margin: 3px 0 10px 27px; }
+  .spot .body { margin-left: 27px; }
+  .spot .why { font-size: 14.5px; margin: 0 0 10px; }
+  .field { display: grid; grid-template-columns: 64px 1fr; gap: 10px; font-size: 13.5px; margin-bottom: 7px; }
+  .field .lab { color: var(--faint); font-weight: 650; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; padding-top: 2px; }
+  .stay { background: rgba(0,113,227,0.06); border-radius: 10px; padding: 9px 12px; margin: 10px 0; }
+  .stay .lab { color: var(--blue); font-weight: 700; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .stay .area { font-size: 13.5px; margin-bottom: 4px; }
+  .stay .area b { font-weight: 640; }
+  .stay .area .first { color: var(--blue); font-size: 10.5px; font-weight: 700; margin-left: 4px; }
+  .getting { font-size: 13px; color: var(--muted); }
+  .getting b { color: var(--text); font-weight: 600; }
+  .getting .alt { margin-top: 2px; }
+  .note-maybe { margin-top: 9px; padding: 7px 10px; background: rgba(199,144,13,0.09); border-radius: 8px; font-size: 12.5px; color: #8a6407; }
+  .timing { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+
+  .tag { font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; border-radius: 20px; padding: 1px 6px; text-transform: uppercase; white-space: nowrap; }
+  .tag.score { color: var(--text); border: 1px solid var(--line); }
+  .tag.score.s7 { color: #fff; background: #d0342c; border-color: #d0342c; }
+  .tag.score.s6 { color: #d0342c; border-color: rgba(208,52,44,0.4); }
+  .tag.role { color: var(--muted); background: #f0f0f2; }
+  .tag.maybe { color: #c7900d; border: 1px solid rgba(199,144,13,0.35); }
+
+  @media (max-width: 560px) {
+    .spot .body, .spot .acts { margin-left: 0; }
+    .field { grid-template-columns: 1fr; gap: 0; }
+  }
+</style>
+<script src="route-data.js"></script>
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="brand">Sabbatical</span>
+  <a href="index.html">Map</a>
+  <a href="overview.html" class="on">Overview</a>
+  <a href="health.html">Health</a>
+  <a href="visas.html">Visas</a>
+  <a href="gear.html">Apps &amp; gear</a>
+</nav>
+
+<header class="wrap">
+  <h1>Overview</h1>
+  <p class="sub">Every stop in order: why it's there, what to do, what to eat, where in town to stay, and how to get there. Red-edged cards are the beats. Dashed cards are maybes.</p>
+</header>
+
+<nav class="jump">
+  <div class="wrap" id="jump"></div>
+</nav>
+
+<main class="wrap">
+  <div class="controls" style="padding-top:18px">
+    <div class="row" id="chips"><span class="flabel">Show me</span></div>
+    <div class="row">
+      <button class="chip maybe-toggle on" id="maybe-toggle">Maybes shown</button>
+      <button class="linkbtn" id="clear-filters" hidden>Clear filters</button>
+    </div>
+  </div>
+  <div id="list"></div>
+  <noscript>This page needs JavaScript turned on to show the stops.</noscript>
+</main>
+
+<script>
+/* Builds the overview from the same stop list the map uses (route-data.js). */
+
+const listEl = document.getElementById("list");
+
+if (typeof journey === "undefined") {
+  listEl.innerHTML = `<p class="lede">The stop list couldn't load. Make sure route-data.js sits next to this page, then reload.</p>`;
+} else {
+  buildPage();
+}
+
+function buildPage() {
+  const nightsOf = s => s.nights + (s.overnightTravel || 0);
+  const scoreTag = s => s.score ? `<span class="tag score s${s.score}">${s.score}/7</span>` : "";
+  const roleTag  = s => s.role ? `<span class="tag role">${s.role}</span>` : "";
+  const maybeTag = s => s.maybe ? `<span class="tag maybe">maybe</span>` : "";
+  const legId = leg => "leg-" + leg.toLowerCase().replace(/[^a-z]+/g, "-");
+
+  /* ---------- The cards, grouped by leg ---------- */
+  const legs = [...new Set(journey.map(s => s.leg))];
+  let html = "", order = 0;
+
+  legs.forEach(leg => {
+    const stops = journey.filter(s => s.leg === leg);
+    const isMaybeLeg = stops.every(s => s.maybe);
+    const legNights = stops.filter(s => !s.maybe).reduce((sum, s) => sum + nightsOf(s), 0);
+    html += `<section class="leg ${isMaybeLeg ? "maybe-leg" : ""}" id="${legId(leg)}">
+      <h2>${leg} <span class="n">${isMaybeLeg ? "maybe" : legNights + " nights"}</span></h2>`;
+
+    stops.forEach(s => {
+      if (!s.maybe) order++;
+      const pick = s.travel.find(t => t.pick) || s.travel[0];
+      const others = s.travel.filter(t => t !== pick);
+      const kind = s.maybe ? "maybe" : s.score === 7 ? "beat" : (s.role === "transit" ? "transit" : "");
+      html += `
+      <article class="spot ${kind}" data-id="${s.id}" data-maybe="${s.maybe ? 1 : 0}">
+        <div class="top">
+          <span class="idx">${s.maybe ? "·" : order}</span>
+          <span class="name">${s.name}</span>
+          ${scoreTag(s)} ${roleTag(s)} ${maybeTag(s)}
+          <span class="nights">${s.spurFrom ? "+" + s.cost + " nights" : s.nights === 0 ? "pass through" : s.nights + (s.nights === 1 ? " night" : " nights")}</span>
+        </div>
+        <div class="acts">${s.tags.map(t => ACTIVITIES[t]).join(" · ") || "&nbsp;"}</div>
+        <div class="body">
+          <p class="why">${s.why}</p>
+          <div class="field"><span class="lab">Do</span><span>${s.do}</span></div>
+          ${s.food && s.food !== "—" ? `<div class="field"><span class="lab">Eat</span><span>${s.food}</span></div>` : ""}
+          ${s.stay ? `<div class="stay"><div class="lab">Where to stay</div>
+            ${s.stay.map(a => `<div class="area"><b>${a.area}</b>${a.pick && s.stay.length > 1 ? `<span class="first">FIRST CHOICE</span>` : ""}. ${a.note}</div>`).join("")}
+          </div>` : ""}
+          <div class="field"><span class="lab">Get here</span><span class="getting">
+            <b>${pick.how}</b> · ${pick.time}${pick.note ? ". " + pick.note : ""}
+            ${others.map(t => `<div class="alt">Or: ${t.how} · ${t.time}${t.note ? ". " + t.note : ""}</div>`).join("")}
+          </span></div>
+          ${s.months && s.months !== "—" ? `<div class="timing"><b>Timing:</b> ${s.months}</div>` : ""}
+          ${s.skip ? `<div class="note-maybe">A maybe. If you skip it: ${s.skip}</div>` : ""}
+          ${s.spurFrom ? `<div class="note-maybe">A maybe side trip. Adds about ${s.cost} nights.</div>` : ""}
+        </div>
+      </article>`;
+    });
+    html += `</section>`;
+  });
+  listEl.innerHTML = html;
+
+  /* ---------- Jump links to each leg ---------- */
+  document.getElementById("jump").innerHTML = legs
+    .map(leg => `<a href="#${legId(leg)}">${leg.replace("Thailand — ", "Thailand: ").replace("Maybe — ", "")}</a>`).join("");
+
+  /* ---------- "Show me" activity filters ---------- */
+  const activeFilters = new Set();
+  let showMaybes = true;
+  const chipsEl = document.getElementById("chips");
+  const clearBtn = document.getElementById("clear-filters");
+  const maybeBtn = document.getElementById("maybe-toggle");
+
+  chipsEl.insertAdjacentHTML("beforeend", Object.entries(ACTIVITIES).map(([key, label]) => {
+    const count = journey.filter(s => s.tags.includes(key)).length;
+    return `<button class="chip" data-key="${key}">${label}<span class="count">${count}</span></button>`;
+  }).join(""));
+
+  function apply() {
+    journey.forEach(s => {
+      const card = listEl.querySelector(`.spot[data-id="${s.id}"]`);
+      const matches = activeFilters.size === 0 || s.tags.some(t => activeFilters.has(t));
+      card.classList.toggle("dimmed", !matches);
+      card.style.display = (!showMaybes && s.maybe) ? "none" : "";
+    });
+    listEl.querySelectorAll(".leg.maybe-leg").forEach(sec => { sec.style.display = showMaybes ? "" : "none"; });
+    chipsEl.querySelectorAll(".chip").forEach(c => c.classList.toggle("on", activeFilters.has(c.dataset.key)));
+    clearBtn.hidden = activeFilters.size === 0;
+    maybeBtn.classList.toggle("on", showMaybes);
+    maybeBtn.textContent = showMaybes ? "Maybes shown" : "Maybes hidden";
+  }
+
+  chipsEl.querySelectorAll(".chip").forEach(chip => chip.addEventListener("click", () => {
+    const key = chip.dataset.key;
+    activeFilters.has(key) ? activeFilters.delete(key) : activeFilters.add(key);
+    apply();
+  }));
+  clearBtn.addEventListener("click", () => { activeFilters.clear(); apply(); });
+  maybeBtn.addEventListener("click", () => { showMaybes = !showMaybes; apply(); });
+}
+</script>
+</body>
+</html>

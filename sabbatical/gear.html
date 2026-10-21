@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Apps &amp; Gear — Sabbatical</title>
+<style>
+  :root {
+    --text: #1d1d1f; --muted: #6e6e73; --faint: #a1a1a6;
+    --line: #e5e5e7; --wash: #fafafa;
+    --red: #c8322a; --redwash: #fdf2f1;
+    --amber: #b07503; --amberwash: #fdf8ef;
+    --blue: #0071e3; --bluewash: #f1f7fe;
+    --green: #1d8a45;
+  }
+  * { box-sizing: border-box; -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; padding: 0 0 60px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text); background: #fff; line-height: 1.55; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 700px; margin: 0 auto; padding: 0 16px; }
+
+  /* Top bar: links between the four pages */
+  .topnav { height: 52px; display: flex; align-items: center; gap: 6px; padding: 0 18px;
+    border-bottom: 1px solid var(--line); background: #fff; overflow-x: auto; }
+  .topnav .brand { font-weight: 650; font-size: 14px; margin-right: 12px; white-space: nowrap; }
+  .topnav a { text-decoration: none; color: var(--muted); font-size: 13px; font-weight: 560;
+    padding: 7px 13px; border-radius: 999px; white-space: nowrap; }
+  .topnav a:hover { background: #f0f0f2; color: var(--text); }
+  .topnav a.on { background: var(--text); color: #fff; }
+
+  header { padding: 30px 0 16px; }
+  h1 { font-size: 25px; font-weight: 650; letter-spacing: -0.025em; margin: 0 0 5px; }
+  .sub { font-size: 13.5px; color: var(--muted); margin: 0; }
+
+  /* Sticky jump links within the page */
+  .jump { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,0.94);
+    backdrop-filter: saturate(180%) blur(14px); border-bottom: 1px solid var(--line); padding: 10px 0; }
+  .jump .wrap { display: flex; gap: 7px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .jump a { flex-shrink: 0; text-decoration: none; color: var(--text); font-size: 13px; font-weight: 560;
+    padding: 7px 13px; border: 1px solid var(--line); border-radius: 999px; background: #fff; white-space: nowrap; }
+
+  section { padding: 28px 0 6px; scroll-margin-top: 62px; }
+  h2 { font-size: 19px; font-weight: 640; letter-spacing: -0.015em; margin: 0 0 3px;
+       display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+  h2 .tag { font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; padding: 2px 8px; border-radius: 20px; }
+  .tag.mosq { background: var(--bluewash); color: var(--blue); }
+  .tag.fever { background: var(--amberwash); color: var(--amber); }
+  .tag.bite { background: var(--redwash); color: var(--red); }
+  .lede { font-size: 14px; color: var(--muted); margin: 0 0 16px; }
+
+  .card { border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin-bottom: 14px; }
+  .card.wash { background: var(--wash); }
+  .card h3 { font-size: 14.5px; font-weight: 620; margin: 0 0 9px; }
+
+  .alarm { border: 1.5px solid rgba(200,50,42,0.35); background: var(--redwash); border-radius: 14px; padding: 16px 18px; margin-bottom: 14px; }
+  .alarm h3 { font-size: 14px; font-weight: 700; color: var(--red); margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .alarm .why { font-size: 13px; color: #8a231d; margin: 0 0 11px; }
+  .alarm ul { margin: 0; padding-left: 19px; }
+  .alarm li { font-size: 14px; margin-bottom: 5px; font-weight: 500; }
+
+  .warn { border: 1.5px solid rgba(176,117,3,0.3); background: var(--amberwash); border-radius: 14px; padding: 15px 18px; margin-bottom: 14px; }
+  .warn h3 { font-size: 14px; font-weight: 700; color: var(--amber); margin: 0 0 5px; }
+  .warn p { font-size: 13.5px; margin: 0; color: #7a5202; }
+
+  ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; }
+  ol.steps li { counter-increment: s; position: relative; padding: 0 0 14px 40px; font-size: 14.5px; }
+  ol.steps li:last-child { padding-bottom: 0; }
+  ol.steps li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--text); color: #fff; font-size: 13px; font-weight: 650; display: flex; align-items: center; justify-content: center; }
+  ol.steps li .detail { display: block; font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+  ul.plain { margin: 0; padding-left: 19px; }
+  ul.plain li { font-size: 14px; margin-bottom: 6px; }
+
+  .yesno { display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0 0; }
+  .pill { font-size: 13.5px; font-weight: 580; padding: 8px 13px; border-radius: 10px; flex: 1; min-width: 150px; }
+  .pill.yes { background: rgba(29,138,69,0.09); color: var(--green); }
+  .pill.no  { background: var(--redwash); color: var(--red); }
+
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  th, td { text-align: left; font-size: 13.5px; padding: 9px 10px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--faint); font-weight: 650; }
+  td.num { font-variant-numeric: tabular-nums; font-weight: 620; white-space: nowrap; }
+
+  .footnote { font-size: 12.5px; color: var(--muted); line-height: 1.55; margin-top: 8px; }
+  hr { border: none; border-top: 1px solid var(--line); margin: 30px 0 0; }
+
+  @media print {
+    .topnav, .jump { display: none; }
+    section { page-break-inside: avoid; padding-top: 16px; }
+    .alarm, .warn, .card { break-inside: avoid; }
+  }
+</style>
+<style>
+  /* Extra styles for this page */
+  .yes { color: var(--green); font-weight: 650; }
+  .no  { color: var(--red); font-weight: 650; }
+  .some { color: var(--amber); font-weight: 650; }
+  .apps { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+  .app { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .app .n { font-size: 14.5px; font-weight: 640; }
+  .app .w { font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 650; margin: 1px 0 4px; }
+  .app .d { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  h3.group { font-size: 13px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin: 22px 0 10px; }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="brand">Sabbatical</span>
+  <a href="index.html">Map</a>
+  <a href="overview.html">Overview</a>
+  <a href="health.html">Health</a>
+  <a href="visas.html">Visas</a>
+  <a href="gear.html" class="on">Apps &amp; gear</a>
+</nav>
+
+<header class="wrap">
+  <h1>Apps &amp; gear</h1>
+  <p class="sub">What to install before you go, which plugs work where, and the few things worth packing.</p>
+</header>
+
+<nav class="jump">
+  <div class="wrap">
+    <a href="#plugs">Plugs</a>
+    <a href="#apps">Apps</a>
+    <a href="#data">SIM &amp; data</a>
+    <a href="#money">Money</a>
+    <a href="#pack">Packing</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ================= PLUGS ================= -->
+<section id="plugs">
+  <h2>Plugs</h2>
+  <p class="lede">Bring your European charger and one adapter with the UK-style three-pin plug (type G). That covers every country on the route.</p>
+
+  <div class="card wash">
+    <div class="table-scroll"><table>
+      <tr><th>Country</th><th>Sockets</th><th>European</th><th>Japanese &amp; American</th></tr>
+      <tr><td>Thailand</td><td>A, B, C, O</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+      <tr><td>Laos</td><td>A, B, C, E, F</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+      <tr><td>Vietnam</td><td>A, C, F</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+      <tr><td>Cambodia</td><td>A, C, G</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+      <tr><td>Malaysia</td><td>G</td><td class="no">Adapter</td><td class="no">Adapter</td></tr>
+      <tr><td>Singapore</td><td>G</td><td class="no">Adapter</td><td class="no">Adapter</td></tr>
+      <tr><td>Philippines</td><td>A, B, C</td><td class="some">Mostly</td><td class="yes">Yes</td></tr>
+    </table></div>
+    <p class="footnote">Japanese and American chargers both use the flat two-pin plug (type A). European means the slim two-round-pin plug (type C). Chunky European plugs with side grounding clips (type F) won't fit everywhere. In the Philippines, older sockets take only flat pins, so a Japanese or American charger is the safer bet there.</p>
+  </div>
+
+  <div class="warn">
+    <h3>Check the voltage on your Japanese charger</h3>
+    <p>Japan runs on 100 V. Every country on this route runs on 220–240 V. Look at the small print on the charger: <strong>"INPUT 100–240V"</strong> means it works everywhere. If it says only 100 V, it will burn out the moment you plug it in. Almost all phone and laptop chargers are 100–240 V. Hair dryers and some shavers aren't.</p>
+  </div>
+
+  <div class="card">
+    <h3>The simplest setup</h3>
+    <ul class="plain">
+      <li><strong>One USB-C charger with several ports</strong> (a GaN charger, 65 W or so) charges phone, laptop and power bank at once.</li>
+      <li><strong>One universal travel adapter</strong> that does type G. Or buy a G adapter for a few ringgit at any 7-Eleven in Malaysia.</li>
+      <li><strong>A power bank under 100 Wh</strong> (about 27,000 mAh). It goes in your carry-on, never in checked bags. Several Asian airlines, including AirAsia, Thai and Vietnam Airlines, now ban using power banks during flights, so charge before boarding.</li>
+    </ul>
+  </div>
+</section>
+
+<hr />
+
+<!-- ================= APPS ================= -->
+<section id="apps">
+  <h2>Apps</h2>
+  <p class="lede">Install these at home, while you have good wifi and your Swedish phone number for verification codes.</p>
+
+  <h3 class="group">Getting around</h3>
+  <div class="apps">
+    <div class="app"><div class="n">Grab</div><div class="w">Thailand · Vietnam · Cambodia · Malaysia · Singapore · Philippines</div>
+      <div class="d">Taxis, motorbike taxis and food delivery. The fixed price stops haggling. Add a card. Thin coverage in Laos.</div></div>
+    <div class="app"><div class="n">Bolt</div><div class="w">Thailand · Malaysia</div>
+      <div class="d">Often cheaper than Grab in Bangkok. Worth comparing.</div></div>
+    <div class="app"><div class="n">Xanh SM</div><div class="w">Vietnam</div>
+      <div class="d">Electric taxis and motorbike taxis. Clean, cheap and reliable in Hanoi and HCMC.</div></div>
+    <div class="app"><div class="n">PassApp</div><div class="w">Cambodia</div>
+      <div class="d">Tuk-tuks in Phnom Penh and Siem Reap at app prices.</div></div>
+    <div class="app"><div class="n">12Go</div><div class="w">Everywhere</div>
+      <div class="d">Buses, trains, ferries and vans across the whole region, including island speedboats and border minibuses. Your main booking app.</div></div>
+    <div class="app"><div class="n">Baolau</div><div class="w">Vietnam · Cambodia · Laos</div>
+      <div class="d">An alternative to 12Go, often better for Vietnamese trains and cross-border buses.</div></div>
+    <div class="app"><div class="n">D-Ticket</div><div class="w">Thailand</div>
+      <div class="d">The State Railway's own app for Thai train tickets.</div></div>
+    <div class="app"><div class="n">Easybook</div><div class="w">Malaysia · Singapore</div>
+      <div class="d">Buses between Penang, Cameron Highlands, KL and Singapore.</div></div>
+    <div class="app"><div class="n">Skyscanner</div><div class="w">Flights</div>
+      <div class="d">Compare regional airlines (AirAsia, Vietjet, Cebu Pacific). Book direct with the airline afterwards.</div></div>
+  </div>
+
+  <h3 class="group">Maps &amp; language</h3>
+  <div class="apps">
+    <div class="app"><div class="n">Google Maps</div><div class="w">Everywhere</div>
+      <div class="d">Download offline areas before each leg. Star your hostels and places from your lists.</div></div>
+    <div class="app"><div class="n">Organic Maps</div><div class="w">Hikes · remote areas</div>
+      <div class="d">Free offline maps with walking trails. Better than Google on Ha Giang, Pu Luong, Khao Sok and Banaue.</div></div>
+    <div class="app"><div class="n">Google Translate</div><div class="w">Everywhere</div>
+      <div class="d">Download Thai, Lao, Vietnamese, Khmer, Malay and Filipino for offline use. Camera mode reads menus.</div></div>
+  </div>
+
+  <h3 class="group">Talking to people</h3>
+  <div class="apps">
+    <div class="app"><div class="n">LINE</div><div class="w">Thailand</div>
+      <div class="d">How Thai guesthouses, tour operators and drivers message.</div></div>
+    <div class="app"><div class="n">Zalo</div><div class="w">Vietnam</div>
+      <div class="d">How Vietnamese homestays, easy riders and tailors message. Essential for Ha Giang and Hoi An.</div></div>
+    <div class="app"><div class="n">WhatsApp</div><div class="w">Malaysia · Singapore · Cambodia · travellers</div>
+      <div class="d">The default with other travellers, and in Malaysia.</div></div>
+    <div class="app"><div class="n">Messenger</div><div class="w">Philippines</div>
+      <div class="d">Everyone in the Philippines uses Facebook Messenger, including boat operators and guesthouses.</div></div>
+    <div class="app"><div class="n">Telegram</div><div class="w">Cambodia · Laos</div>
+      <div class="d">Common with Cambodian and Lao businesses.</div></div>
+  </div>
+
+  <h3 class="group">Sleeping &amp; doing</h3>
+  <div class="apps">
+    <div class="app"><div class="n">Hostelworld</div><div class="w">Everywhere</div>
+      <div class="d">For social hostels. Read reviews for "social" and "quiet" to pick the right one.</div></div>
+    <div class="app"><div class="n">Agoda</div><div class="w">Everywhere</div>
+      <div class="d">Usually the cheapest for private rooms in Asia. Booking.com is the alternative.</div></div>
+    <div class="app"><div class="n">Klook</div><div class="w">Everywhere</div>
+      <div class="d">Tours, tickets and activities. Often cheaper booked locally, but handy for sold-out things.</div></div>
+    <div class="app"><div class="n">PADI</div><div class="w">Diving</div>
+      <div class="d">Your digital dive certificate and logbook after the Ko Lanta course.</div></div>
+  </div>
+
+  <h3 class="group">Safety &amp; border forms</h3>
+  <div class="apps">
+    <div class="app"><div class="n">UD Resklar</div><div class="w">Sweden</div>
+      <div class="d">The Swedish Foreign Ministry's travel app: country advice, alerts and embassy contacts. Register on Svensklistan too.</div></div>
+    <div class="app"><div class="n">IQAir</div><div class="w">Hanoi · Chiang Mai · Bangkok</div>
+      <div class="d">Air quality. Hanoi's winter smog can get bad, so pick mask days.</div></div>
+    <div class="app"><div class="n">Windy</div><div class="w">Boat days</div>
+      <div class="d">Wind and waves before the Tao expedition, island speedboats and the Langkawi ferry.</div></div>
+    <div class="app"><div class="n">MyICA · eTravel</div><div class="w">Singapore · Philippines</div>
+      <div class="d">Arrival forms. Links for every country are on the <a href="visas.html">Visas</a> page.</div></div>
+  </div>
+</section>
+
+<hr />
+
+<!-- ================= DATA ================= -->
+<section id="data">
+  <h2>SIM &amp; data</h2>
+  <p class="lede">Check your phone is unlocked and supports eSIM before you go.</p>
+  <div class="card">
+    <ul class="plain">
+      <li><strong>The easy option: one regional Asia eSIM</strong> (Airalo, Holafly or Saily) covering all seven countries. Set it up at home and it works the moment you land. It costs more per GB than a local SIM.</li>
+      <li><strong>The cheap option: a local SIM per country,</strong> bought at the airport or a 7-Eleven. Thailand: AIS or True. Vietnam: Viettel (best coverage in the mountains). Laos: Unitel. Cambodia: Smart. Malaysia: CelcomDigi or Hotlink. Philippines: Smart or Globe (registration with your passport required).</li>
+      <li><strong>The middle way:</strong> the regional eSIM as a backup, plus local SIMs in Thailand and Vietnam where you stay longest.</li>
+      <li>Keep your Swedish SIM in for bank and BankID codes, but turn off data roaming on it.</li>
+    </ul>
+  </div>
+</section>
+
+<hr />
+
+<!-- ================= MONEY ================= -->
+<section id="money">
+  <h2>Money</h2>
+  <div class="card">
+    <ul class="plain">
+      <li><strong>Wise or Revolut card</strong> for good exchange rates, plus a backup card kept in a different bag.</li>
+      <li><strong>Thailand:</strong> ATMs charge about 220 baht per withdrawal whatever the amount, so take out more each time.</li>
+      <li><strong>Laos:</strong> cash country. ATMs are few and limits are low, so arrive with kip or dollars.</li>
+      <li><strong>Vietnam:</strong> cash for street food and small places, cards in cities.</li>
+      <li><strong>Cambodia:</strong> runs on US dollars. ATMs give dollars, change comes in riel.</li>
+      <li><strong>Malaysia, Singapore:</strong> cards and tap-to-pay almost everywhere.</li>
+      <li><strong>Philippines:</strong> cash on Palawan. El Nido and Coron ATMs run dry, so bring enough for the Tao trip.</li>
+      <li>Always choose to be charged in <strong>local currency</strong> when a card machine asks.</li>
+    </ul>
+  </div>
+</section>
+
+<hr />
+
+<!-- ================= PACKING ================= -->
+<section id="pack">
+  <h2>Worth packing</h2>
+  <div class="card">
+    <ul class="plain">
+      <li><strong>A proper warm layer and gloves</strong> for Ha Giang in December (5–15°C, colder on a bike) and the northern Thai mornings.</li>
+      <li><strong>A light rain jacket</strong> for Hue, Hoi An and Kuala Lumpur.</li>
+      <li><strong>A dry bag</strong> for boat days and the Tao expedition.</li>
+      <li><strong>A rash vest</strong> for snorkelling. It beats sunscreen on your back.</li>
+      <li><strong>Reef-safe sunscreen</strong>, which some marine parks require.</li>
+      <li><strong>A padlock</strong> for hostel lockers, a headlamp, and a quick-dry towel.</li>
+      <li><strong>Long trousers and covered shoulders</strong> for temples and the Grand Palace.</li>
+      <li><strong>Pack light and buy clothes on the way.</strong> Bangkok, Chiang Mai and Hoi An are where you'll want the space.</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Health — Sabbatical</title>
+<!--
+  SELF-CONTAINED ON PURPOSE.
+  No fonts, scripts or images from the internet. Save this page to your phone
+  and it works with no signal. It also prints cleanly if you want a paper copy.
+-->
+<style>
+  :root {
+    --text: #1d1d1f; --muted: #6e6e73; --faint: #a1a1a6;
+    --line: #e5e5e7; --wash: #fafafa;
+    --red: #c8322a; --redwash: #fdf2f1;
+    --amber: #b07503; --amberwash: #fdf8ef;
+    --blue: #0071e3; --bluewash: #f1f7fe;
+    --green: #1d8a45;
+  }
+  * { box-sizing: border-box; -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; padding: 0 0 60px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text); background: #fff; line-height: 1.55; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 700px; margin: 0 auto; padding: 0 16px; }
+
+  /* Top bar: links between the four pages */
+  .topnav { height: 52px; display: flex; align-items: center; gap: 6px; padding: 0 18px;
+    border-bottom: 1px solid var(--line); background: #fff; overflow-x: auto; }
+  .topnav .brand { font-weight: 650; font-size: 14px; margin-right: 12px; white-space: nowrap; }
+  .topnav a { text-decoration: none; color: var(--muted); font-size: 13px; font-weight: 560;
+    padding: 7px 13px; border-radius: 999px; white-space: nowrap; }
+  .topnav a:hover { background: #f0f0f2; color: var(--text); }
+  .topnav a.on { background: var(--text); color: #fff; }
+
+  header { padding: 30px 0 16px; }
+  h1 { font-size: 25px; font-weight: 650; letter-spacing: -0.025em; margin: 0 0 5px; }
+  .sub { font-size: 13.5px; color: var(--muted); margin: 0; }
+
+  /* Sticky jump links within the page */
+  .jump { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,0.94);
+    backdrop-filter: saturate(180%) blur(14px); border-bottom: 1px solid var(--line); padding: 10px 0; }
+  .jump .wrap { display: flex; gap: 7px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .jump a { flex-shrink: 0; text-decoration: none; color: var(--text); font-size: 13px; font-weight: 560;
+    padding: 7px 13px; border: 1px solid var(--line); border-radius: 999px; background: #fff; white-space: nowrap; }
+
+  section { padding: 28px 0 6px; scroll-margin-top: 62px; }
+  h2 { font-size: 19px; font-weight: 640; letter-spacing: -0.015em; margin: 0 0 3px;
+       display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+  h2 .tag { font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; padding: 2px 8px; border-radius: 20px; }
+  .tag.mosq { background: var(--bluewash); color: var(--blue); }
+  .tag.fever { background: var(--amberwash); color: var(--amber); }
+  .tag.bite { background: var(--redwash); color: var(--red); }
+  .lede { font-size: 14px; color: var(--muted); margin: 0 0 16px; }
+
+  .card { border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin-bottom: 14px; }
+  .card.wash { background: var(--wash); }
+  .card h3 { font-size: 14.5px; font-weight: 620; margin: 0 0 9px; }
+
+  .alarm { border: 1.5px solid rgba(200,50,42,0.35); background: var(--redwash); border-radius: 14px; padding: 16px 18px; margin-bottom: 14px; }
+  .alarm h3 { font-size: 14px; font-weight: 700; color: var(--red); margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .alarm .why { font-size: 13px; color: #8a231d; margin: 0 0 11px; }
+  .alarm ul { margin: 0; padding-left: 19px; }
+  .alarm li { font-size: 14px; margin-bottom: 5px; font-weight: 500; }
+
+  .warn { border: 1.5px solid rgba(176,117,3,0.3); background: var(--amberwash); border-radius: 14px; padding: 15px 18px; margin-bottom: 14px; }
+  .warn h3 { font-size: 14px; font-weight: 700; color: var(--amber); margin: 0 0 5px; }
+  .warn p { font-size: 13.5px; margin: 0; color: #7a5202; }
+
+  ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; }
+  ol.steps li { counter-increment: s; position: relative; padding: 0 0 14px 40px; font-size: 14.5px; }
+  ol.steps li:last-child { padding-bottom: 0; }
+  ol.steps li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--text); color: #fff; font-size: 13px; font-weight: 650; display: flex; align-items: center; justify-content: center; }
+  ol.steps li .detail { display: block; font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+  ul.plain { margin: 0; padding-left: 19px; }
+  ul.plain li { font-size: 14px; margin-bottom: 6px; }
+
+  .yesno { display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0 0; }
+  .pill { font-size: 13.5px; font-weight: 580; padding: 8px 13px; border-radius: 10px; flex: 1; min-width: 150px; }
+  .pill.yes { background: rgba(29,138,69,0.09); color: var(--green); }
+  .pill.no  { background: var(--redwash); color: var(--red); }
+
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  th, td { text-align: left; font-size: 13.5px; padding: 9px 10px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--faint); font-weight: 650; }
+  td.num { font-variant-numeric: tabular-nums; font-weight: 620; white-space: nowrap; }
+
+  .footnote { font-size: 12.5px; color: var(--muted); line-height: 1.55; margin-top: 8px; }
+  hr { border: none; border-top: 1px solid var(--line); margin: 30px 0 0; }
+
+  @media print {
+    .topnav, .jump { display: none; }
+    section { page-break-inside: avoid; padding-top: 16px; }
+    .alarm, .warn, .card { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="brand">Sabbatical</span>
+  <a href="index.html">Map</a>
+  <a href="overview.html">Overview</a>
+  <a href="health.html" class="on">Health</a>
+  <a href="visas.html">Visas</a>
+  <a href="gear.html">Apps &amp; gear</a>
+</nav>
+
+<header class="wrap">
+  <h1>Health</h1>
+  <p class="sub">What to watch for across Thailand, Laos, Vietnam, Cambodia, Malaysia, Singapore and the Philippines, and what to do when something goes wrong. General travel information, not medical advice. Save this page to your phone: it works with no signal.</p>
+</header>
+
+<nav class="jump">
+  <div class="wrap">
+    <a href="#before">Before you go</a>
+    <a href="#mosquitoes">Mosquitoes</a>
+    <a href="#dengue">Dengue</a>
+    <a href="#malaria">Malaria</a>
+    <a href="#bite">Animal bite</a>
+    <a href="#stomach">Stomach</a>
+    <a href="#diving">Diving</a>
+    <a href="#road">Scooters</a>
+    <a href="#numbers">Numbers</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ================= BEFORE YOU GO ================= -->
+<section id="before">
+  <h2>Before you go</h2>
+  <p class="lede">The vaccines and cover a travel clinic usually discusses for a long trip through rural Southeast Asia.</p>
+
+  <div class="card">
+    <h3>Vaccines commonly recommended for this route</h3>
+    <ul class="plain">
+      <li><strong>Hepatitis A</strong>, from food and water. Two doses give 25+ years.</li>
+      <li><strong>Tetanus, diphtheria, polio</strong>: be in date. The Philippines has had polio detections.</li>
+      <li><strong>Typhoid</strong>, for street food and rural stays.</li>
+      <li><strong>Japanese encephalitis</strong>, for time near rice paddies: Ninh Binh, Pu Luong, the Mekong Delta, Banaue.</li>
+      <li><strong>Rabies pre-exposure</strong>: two or three doses before you go. It turns a bite from an emergency hunt for scarce immunoglobulin into two ordinary shots.</li>
+      <li><strong>Hepatitis B</strong>: optional, and worth it for a long trip.</li>
+      <li><strong>Dengue (Qdenga)</strong>: two doses three months apart, so it has to start early.</li>
+    </ul>
+  </div>
+
+  <div class="warn">
+    <h3>Two insurance traps</h3>
+    <p>Most single-trip policies stop at 90 days, and this trip is longer. Most also exclude scuba and scooter accidents. Check that your policy covers the full trip, dives to 18 m including training dives, and riding pillion. Divers usually add DAN membership for chamber treatment and evacuation.</p>
+  </div>
+</section>
+
+<hr />
+
+<!-- ================= MOSQUITOES ================= -->
+<section id="mosquitoes">
+  <h2>Mosquitoes <span class="tag mosq">Every 8 hours</span></h2>
+  <p class="lede">Dengue is the biggest health risk on the whole route, and repellent is the main defence.</p>
+
+  <div class="card">
+    <h3>The routine</h3>
+    <ul class="plain">
+      <li><strong>30–50% DEET, reapplied every 8 hours.</strong> A higher percentage lasts longer, not stronger: 50% is about 8 hours, 30% about 6.</li>
+      <li><strong>Sunscreen first, let it soak in, then repellent on top.</strong></li>
+      <li><strong>Picaridin (icaridin) for your face.</strong> It works about as well, doesn't sting, and doesn't melt plastic. Spray it into your palms and wipe it on.</li>
+      <li><strong>Treat clothes with permethrin before you go.</strong> It survives several washes. Do trousers, socks and your daypack.</li>
+      <li><strong>Cover ankles, feet and the back of your neck.</strong> The dengue mosquito bites low and from behind.</li>
+      <li><strong>Sleep under a net or in air conditioning</strong> in jungle and rural stops: Khao Sok, Pu Luong, the Mekong Delta, rural Palawan.</li>
+    </ul>
+  </div>
+
+  <div class="warn">
+    <h3>The bit most people get wrong</h3>
+    <p>The dengue mosquito bites in <strong>daylight</strong>, hardest at dawn and late afternoon. The malaria mosquito bites at <strong>night</strong>. Most travellers only use repellent in the evening, which leaves the dengue window wide open. Put it on in the morning too.</p>
+  </div>
+
+  <div class="card wash">
+    <h3>Where you can relax a little</h3>
+    <p class="footnote" style="margin:0 0 8px">The dengue mosquito rarely lives above about 1,500 m. Only these stops come close:</p>
+    <div class="table-scroll"><table>
+      <tr><th>Stop</th><th>Altitude</th></tr>
+      <tr><td>Da Lat, Vietnam</td><td class="num">~1,500 m</td></tr>
+      <tr><td>Cameron Highlands, Malaysia</td><td class="num">~1,500 m</td></tr>
+      <tr><td>Ha Giang's high passes, Vietnam</td><td class="num">1,000–1,500 m, reduced</td></tr>
+    </table></div>
+    <p class="footnote">Everywhere else, including every city, island and Singapore, carries real dengue risk. Cold nights don't count: Pai is cold and still only 500 m up.</p>
+  </div>
+</section>
+
+<hr />
+
+<!-- ================= DENGUE ================= -->
+<section id="dengue">
+  <h2>Dengue <span class="tag fever">Fever + body pain</span></h2>
+  <p class="lede">Starts 4–10 days after the bite. Sudden fever up to 40°C, a brutal headache, pain behind the eyes, and deep muscle and joint ache. A rash often follows on day 2–5.</p>
+
+  <div class="card">
+    <h3>What to do</h3>
+    <ol class="steps">
+      <li><strong>Paracetamol only.</strong>
+        <span class="detail">Dengue drops your platelets. Ibuprofen, aspirin and naproxen all raise bleeding risk on top of that. This is the one drug rule that matters.</span></li>
+      <li><strong>Drink constantly, with oral rehydration salts.</strong>
+        <span class="detail">Dehydration is what turns manageable dengue into dangerous dengue.</span></li>
+      <li><strong>Get a blood test if the fever lasts past 48 hours.</strong>
+        <span class="detail">It confirms dengue and checks your platelet count. Any decent clinic in the region does this cheaply.</span></li>
+      <li><strong>Stop moving.</strong>
+        <span class="detail">No travel days, no diving, no hiking. Recovery takes 1–2 weeks, and the tiredness lingers longer.</span></li>
+    </ol>
+    <div class="yesno" style="margin-top:14px">
+      <div class="pill yes">✓ Paracetamol · fluids · rest · blood test</div>
+      <div class="pill no">✗ Ibuprofen · aspirin · travelling</div>
+    </div>
+  </div>
+
+  <div class="alarm">
+    <h3>Hospital now, and the timing is a trap</h3>
+    <p class="why">Severe dengue arrives <strong>as the fever drops</strong>, usually day 3–7, exactly when you think you're getting better. It's very treatable with fluids if you get there in time.</p>
+    <ul>
+      <li>Severe stomach pain, or vomiting that won't stop</li>
+      <li>Bleeding gums or nose, blood in vomit or stool</li>
+      <li>Difficulty breathing</li>
+      <li>Restlessness, unusual drowsiness or confusion</li>
+      <li>Cold, clammy, pale skin</li>
+    </ul>
+  </div>
+
+  <div class="warn">
+    <h3>A second infection is worse</h3>
+    <p>A second dengue infection with a different strain carries a higher risk of the severe form. If you've had it once and get a fever again later, go to hospital sooner.</p>
+  </div>
+</section>
+
+<hr />
+
+<!-- ================= MALARIA ================= -->
+<section id="malaria">
+  <h2>Malaria <span class="tag fever">Any fever, get tested</span></h2>
+  <p class="lede">Feels exactly like flu: fever, chills, sweats, aching. Most of this route is low-risk. Palawan in the Philippines is the main exception, along with remote forest and border areas.</p>
+
+  <div class="alarm">
+    <h3>The one rule that matters</h3>
+    <p class="why">The dangerous kind of malaria can kill within 24–48 hours of the first fever. A same-day blood test costs almost nothing.</p>
+    <ul>
+      <li><strong>Any fever from 7 days after entering a malaria area until a year after leaving: get a malaria test the same day.</strong></li>
+      <li>Tell every doctor "I have been in a malaria area", including back home.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>What to do</h3>
+    <ol class="steps">
+      <li><strong>Rapid blood test today.</strong><span class="detail">An answer in about 20 minutes. Ask for it by name.</span></li>
+      <li><strong>If it's positive, local treatment works.</strong><span class="detail">Artemisinin combination therapy is standard across the region. Finish the whole course.</span></li>
+      <li><strong>A fever in your first week isn't malaria.</strong><span class="detail">Malaria can't start sooner than 7 days after a bite. Think dengue, a stomach bug or flu.</span></li>
+    </ol>
+  </div>
+
+  <div class="card wash">
+    <h3>Preventive tablets and Palawan</h3>
+    <p class="footnote" style="margin:0">Most travellers on this route take no daily tablets. Ask your clinic about Palawan specifically. If you take anything for a diving trip, atovaquone-proguanil (Malarone) is the usual choice: doxycycline makes you burn in the sun, and mefloquine can cause dizziness that looks like decompression sickness.</p>
+  </div>
+</section>
+
+<hr />
+
+<!-- ================= ANIMAL BITE ================= -->
+<section id="bite">
+  <h2>Bitten or scratched <span class="tag bite">Act today</span></h2>
+  <p class="lede">Dogs, cats, monkeys or bats. Any break in the skin counts, however small. Rabies is common in street dogs across the region, and monkeys at temples bite.</p>
+
+  <div class="alarm">
+    <h3>Do this first</h3>
+    <p class="why">Washing is the single most effective thing you can do for this wound.</p>
+    <ul>
+      <li>Soap and running water for <strong>fifteen full minutes</strong>. Time it.</li>
+      <li>Then povidone-iodine or 70% alcohol.</li>
+      <li>Leave it open. No stitches, no tight dressing.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Then, the same day</h3>
+    <ol class="steps">
+      <li><strong>Get to a clinic or hospital.</strong>
+        <span class="detail">Tell them whether you've had pre-exposure rabies vaccination. It changes the treatment completely.</span></li>
+      <li><strong>If pre-vaccinated: two doses, day 0 and day 3.</strong>
+        <span class="detail">No immunoglobulin needed, which is the scarce part rural clinics often lack.</span></li>
+      <li><strong>If not: vaccine plus immunoglobulin, fast.</strong>
+        <span class="detail">If the clinic has no immunoglobulin, travel to a city hospital that does: Bangkok, Hanoi, HCMC, Phnom Penh, Kuala Lumpur, Manila.</span></li>
+      <li><strong>Ask about antibiotics and tetanus.</strong>
+        <span class="detail">Animal bites infect badly in the tropics, especially monkey and cat bites.</span></li>
+    </ol>
+  </div>
+
+  <div class="alarm">
+    <h3>Never wait and see</h3>
+    <p class="why">Once rabies symptoms appear it is almost always fatal. Before symptoms, treatment works.</p>
+    <ul>
+      <li>Don't wait to find out if the animal was sick.</li>
+      <li>Don't skip the doses because you feel fine.</li>
+      <li>Don't postpone to the next town if it's days away.</li>
+    </ul>
+  </div>
+</section>
+
+<hr />
+
+<!-- ================= STOMACH ================= -->
+<section id="stomach">
+  <h2>Stomach, food and water</h2>
+  <p class="lede">Almost everyone gets an upset stomach at some point. It's rarely serious.</p>
+
+  <div class="card">
+    <ul class="plain">
+      <li><strong>Drink bottled or filtered water.</strong> Ice in cities and restaurants is factory-made and generally fine.</li>
+      <li><strong>Busy street stalls are safer than empty restaurants.</strong> High turnover means fresh food.</li>
+      <li><strong>Carry oral rehydration salts.</strong> Every pharmacy sells them. Dehydration is the real risk.</li>
+      <li><strong>See a doctor</strong> if you have blood in your stool, a high fever, or it lasts more than 3 days.</li>
+      <li><strong>Pharmacies are everywhere</strong> in Thailand, Vietnam, Malaysia and the Philippines, and staff often speak some English.</li>
+    </ul>
+  </div>
+
+  <div class="card wash">
+    <h3>Heat and sun</h3>
+    <ul class="plain">
+      <li>Drink more than you think, and add electrolytes on hiking and temple days.</li>
+      <li>On boats and snorkel days, wear a rash vest. Sun on your back while face-down in the water burns fast.</li>
+      <li>Reef-safe sunscreen is required in some marine parks.</li>
+    </ul>
+  </div>
+</section>
+
+<hr />
+
+<!-- ================= DIVING ================= -->
+<section id="diving">
+  <h2>Diving</h2>
+  <p class="lede">Ko Lanta for the Open Water course, Coron for the wrecks.</p>
+
+  <div class="card">
+    <ul class="plain">
+      <li><strong>No flying for 18–24 hours after your last dive.</strong> Plan the dive days around the Krabi and Coron flights.</li>
+      <li><strong>No diving with a cold or blocked ears.</strong> You can't equalise, and it can burst an eardrum.</li>
+      <li><strong>Stay within your training.</strong> Open Water means 18 m.</li>
+      <li><strong>The PADI medical form</strong> may need a doctor's signature if you tick any "yes". Get it signed before you leave.</li>
+    </ul>
+  </div>
+
+  <div class="alarm">
+    <h3>Signs of decompression sickness</h3>
+    <p class="why">Usually within hours of surfacing. Call DAN's emergency line first, then breathe oxygen if the dive shop has it.</p>
+    <ul>
+      <li>Joint pain, especially shoulders and elbows</li>
+      <li>Numbness, tingling, weakness</li>
+      <li>Unusual tiredness, dizziness, confusion</li>
+      <li>Skin rash or itching</li>
+    </ul>
+  </div>
+</section>
+
+<hr />
+
+<!-- ================= ROAD ================= -->
+<section id="road">
+  <h2>Scooters and roads</h2>
+  <p class="lede">Road accidents are the most common serious injury for travellers in Southeast Asia.</p>
+
+  <div class="card">
+    <ul class="plain">
+      <li><strong>Ride pillion with a licensed driver</strong> unless you hold a motorcycle licence. Without one, riding a scooter yourself is illegal and usually not insured.</li>
+      <li><strong>Always wear a helmet</strong>, and ask for one with a visor.</li>
+      <li><strong>Long trousers and closed shoes</strong> on longer rides. Exhaust burns on the right calf are common.</li>
+      <li><strong>Check the operator.</strong> On Ha Giang and Hai Van, book drivers through known companies, and ask about their safety record and the bikes.</li>
+    </ul>
+  </div>
+</section>
+
+<hr />
+
+<!-- ================= NUMBERS ================= -->
+<section id="numbers">
+  <h2>Numbers and hospitals</h2>
+  <p class="lede">Check these when you land in each country, because they change.</p>
+
+  <div class="card wash">
+    <div class="table-scroll"><table>
+      <tr><th>Country</th><th>Ambulance</th><th>Police</th></tr>
+      <tr><td>Thailand</td><td class="num">1669</td><td class="num">191 · tourist police 1155</td></tr>
+      <tr><td>Laos</td><td class="num">1195</td><td class="num">1191</td></tr>
+      <tr><td>Vietnam</td><td class="num">115</td><td class="num">113</td></tr>
+      <tr><td>Cambodia</td><td class="num">119</td><td class="num">117</td></tr>
+      <tr><td>Malaysia</td><td class="num">999</td><td class="num">999</td></tr>
+      <tr><td>Singapore</td><td class="num">995</td><td class="num">999</td></tr>
+      <tr><td>Philippines</td><td class="num">911</td><td class="num">911</td></tr>
+    </table></div>
+    <p class="footnote">For anything serious, a taxi or Grab to the nearest private hospital is often faster than waiting for an ambulance.</p>
+  </div>
+
+  <div class="card">
+    <h3>Where to aim for</h3>
+    <ul class="plain">
+      <li><strong>Bangkok: Bumrungrad or Samitivej.</strong> World-class, English-speaking, and the regional evacuation target for the mainland.</li>
+      <li><strong>Laos:</strong> facilities are basic. For anything serious, go to Thailand (Chiang Mai, Udon Thani or Bangkok).</li>
+      <li><strong>Vietnam:</strong> international hospitals in Hanoi and HCMC (Vinmec, FV Hospital, Family Medical Practice).</li>
+      <li><strong>Cambodia:</strong> Royal Phnom Penh Hospital, Royal Angkor International in Siem Reap.</li>
+      <li><strong>Malaysia: Gleneagles or Island Hospital in Penang, Prince Court in KL.</strong></li>
+      <li><strong>Singapore: Mount Elizabeth or Raffles.</strong> The target for the southern half of the trip.</li>
+      <li><strong>Philippines: St Luke's or Makati Medical in Manila.</strong> Palawan's care is limited, so serious cases fly to Manila.</li>
+    </ul>
+  </div>
+
+  <div class="card wash">
+    <h3>Keep these in your phone, not on this page</h3>
+    <p class="footnote" style="margin:0">Your insurer's 24-hour emergency number, your policy number, your DAN number and emergency line, and a photo of your passport. Store them offline.</p>
+  </div>
+</section>
+
+</main>
+</body>
+</html>
