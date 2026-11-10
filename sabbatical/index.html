@@ -3,21 +3,19 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>The Route — Sabbatical</title>
+<title>The Route – Sabbatical</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="route-data.js"></script>
 
 <style>
   :root {
     --text: #1d1d1f; --muted: #6e6e73; --faint: #a1a1a6;
     --line: #e5e5e7; --bg: #ffffff; --wash: #fafafa;
-    --ground: #1d1d1f;   /* bus, train, car, scooter */
+    --ground: #1d1d1f;   /* bus, train, car */
     --water:  #0071e3;   /* boat, ferry */
     --air:    #8e8e93;   /* flight */
     --maybe:  #c7900d;   /* undecided stops */
-    --beat:   #d0342c;   /* 7/7 stops */
   }
   * { box-sizing: border-box; }
   html, body {
@@ -25,8 +23,7 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased;
   }
-
-  /* ---------- Top bar: links between the four pages ---------- */
+  /* Top bar: links between the site's pages */
   .topnav {
     height: 52px; display: flex; align-items: center; gap: 6px; padding: 0 18px;
     border-bottom: 1px solid var(--line); background: #fff; overflow-x: auto;
@@ -43,17 +40,17 @@
 
   /* ---------- Sidebar ---------- */
   #sidebar {
-    width: 410px; flex-shrink: 0; height: 100%; overflow-y: auto;
-    border-right: 1px solid var(--line); padding: 26px 26px 60px;
+    width: 390px; flex-shrink: 0; height: 100%; overflow-y: auto;
+    border-right: 1px solid var(--line); padding: 30px 28px 60px;
   }
   #sidebar h1 { font-size: 21px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 4px; }
-  .subtitle { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin: 0 0 18px; }
+  .subtitle { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin: 0 0 20px; }
 
-  /* Night budget panel */
-  .budget { background: var(--wash); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; }
-  .budget .row { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; padding: 3px 0; gap: 10px; }
+  /* Day budget panel */
+  .budget { background: var(--wash); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 18px; }
+  .budget .row { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; padding: 3px 0; }
   .budget .row .k { color: var(--muted); }
-  .budget .row .v { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .budget .row .v { font-weight: 600; font-variant-numeric: tabular-nums; }
   .budget .row.total { border-top: 1px solid var(--line); margin-top: 7px; padding-top: 8px; }
   .budget .note { font-size: 11.5px; color: var(--muted); line-height: 1.5; margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--line); }
   .over { color: #d0342c; }
@@ -61,37 +58,20 @@
 
   /* Toggle */
   .toggle { display: flex; align-items: center; gap: 9px; font-size: 13px; cursor: pointer;
-    padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 16px; user-select: none; }
+    padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 18px; user-select: none; }
   .toggle:hover { background: var(--wash); }
   .toggle input { accent-color: var(--maybe); width: 15px; height: 15px; cursor: pointer; }
 
-  /* Activity filter buttons */
-  .filters { margin-bottom: 16px; }
-  .filters .flabel { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-bottom: 8px;
-    display: flex; justify-content: space-between; }
-  .filters .flabel button { border: none; background: none; color: var(--water); font-size: 11.5px; cursor: pointer; padding: 0; text-transform: none; letter-spacing: 0; }
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip { font: inherit; font-size: 12.5px; font-weight: 560; padding: 6px 11px; border-radius: 999px;
-    border: 1px solid var(--line); background: #fff; color: var(--text); cursor: pointer; }
-  .chip:hover { background: #f0f0f2; }
-  .chip.on { background: var(--text); color: #fff; border-color: var(--text); }
-  .chip .count { color: var(--faint); font-weight: 500; margin-left: 3px; }
-  .chip.on .count { color: rgba(255,255,255,0.6); }
-  .stop.dimmed { opacity: 0.22; }
-  .stop .acts { font-size: 11px; color: var(--faint); margin: 3px 0 0 26px; }
-
   /* Legend */
-  .legend { padding: 12px 15px; margin-bottom: 18px; background: var(--wash);
+  .legend { padding: 12px 15px; margin-bottom: 22px; background: var(--wash);
     border: 1px solid var(--line); border-radius: 12px; }
   .legend .lrow { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--muted); padding: 3px 0; }
-  .legend .swatch { width: 26px; height: 0; flex-shrink: 0; }
+  .legend .swatch { width: 26px; height: 0; border-top-width: 2.5px; flex-shrink: 0; }
   .legend .swatch.ground { border-top: 2.5px solid var(--ground); }
   .legend .swatch.water  { border-top: 2.5px solid var(--water); }
   .legend .swatch.air    { border-top: 2.5px dashed var(--air); }
   .legend .swatch.spur   { border-top: 2.5px dotted var(--maybe); }
   .legend .dotmark { width: 11px; height: 11px; border-radius: 50%; background: var(--ground); flex-shrink: 0; margin: 0 7px; }
-  .legend .dotmark.beat { background: var(--beat); }
-  .legend .dotmark.transit { background: var(--faint); }
   .legend .dotmark.hollow { background: #fff; border: 2px solid var(--maybe); }
 
   /* Stop list */
@@ -103,44 +83,28 @@
   .leg-label .nights { letter-spacing: 0; text-transform: none; font-weight: 500; color: var(--faint); }
   .stop { padding: 10px 13px; border-radius: 11px; cursor: pointer; transition: background 0.15s; margin: 2px -6px; }
   .stop:hover { background: #f0f0f2; }
-  .stop.is-maybe { opacity: 0.75; }
+  .stop.is-maybe { opacity: 0.72; }
   .stop .top { display: flex; align-items: baseline; gap: 9px; }
-  .stop .idx { font-size: 10.5px; color: var(--faint); font-variant-numeric: tabular-nums; min-width: 17px; font-weight: 600; }
+  .stop .idx { font-size: 10.5px; color: var(--faint); font-variant-numeric: tabular-nums; min-width: 15px; font-weight: 600; }
   .stop .name { font-size: 14.5px; font-weight: 560; flex: 1; }
   .stop .nights { font-size: 11.5px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .stop .why { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 4px 0 0 26px; }
-  .stop .how { font-size: 11.5px; color: var(--faint); line-height: 1.45; margin: 3px 0 0 26px; }
-
-  /* Small labels used in the list and popups */
-  .tag { font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; border-radius: 20px;
-    padding: 1px 6px; text-transform: uppercase; white-space: nowrap; }
-  .tag.score { color: var(--text); border: 1px solid var(--line); }
-  .tag.score.s7 { color: #fff; background: var(--beat); border-color: var(--beat); }
-  .tag.score.s6 { color: var(--beat); border-color: rgba(208,52,44,0.4); }
-  .tag.role { color: var(--muted); background: #f0f0f2; }
-  .tag.maybe { color: var(--maybe); border: 1px solid rgba(199,144,13,0.35); }
+  .stop .why { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 4px 0 0 24px; }
+  .stop .maybe-tag { font-size: 9.5px; font-weight: 700; color: var(--maybe); letter-spacing: 0.06em;
+    border: 1px solid rgba(199,144,13,0.35); border-radius: 20px; padding: 1px 6px; text-transform: uppercase; }
 
   /* ---------- Map ---------- */
   #map { flex: 1; height: 100%; background: #eef1f4; }
   .leaflet-popup-content-wrapper { border-radius: 14px; box-shadow: 0 10px 34px rgba(0,0,0,0.14); }
-  .leaflet-popup-content { margin: 15px 17px; font-family: inherit; width: 290px !important; max-height: 60vh; overflow-y: auto; }
+  .leaflet-popup-content { margin: 15px 17px; font-family: inherit; width: 268px !important; }
   .pop-name { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
   .pop-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 3px; }
   .pop-nights { font-size: 11.5px; font-weight: 600; color: var(--water); white-space: nowrap; }
-  .pop-country { font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; margin-bottom: 9px;
-    display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .pop-country { font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; margin-bottom: 9px; }
   .pop-why { font-size: 12.5px; line-height: 1.55; margin-bottom: 11px; }
   .pop-field { font-size: 12px; line-height: 1.5; margin-bottom: 7px; display: flex; gap: 8px; }
   .pop-field .lab { color: var(--faint); font-weight: 600; font-size: 10.5px; text-transform: uppercase;
     letter-spacing: 0.05em; min-width: 52px; flex-shrink: 0; padding-top: 1.5px; }
   .pop-field .val { color: var(--text); }
-  .pop-travel { margin: 10px 0 0; padding-top: 9px; border-top: 1px solid var(--line); }
-  .pop-travel .lab { color: var(--faint); font-weight: 600; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-  .opt { font-size: 12px; line-height: 1.45; padding: 6px 9px; border-radius: 8px; background: var(--wash); margin-bottom: 5px; }
-  .opt.pick { background: rgba(0,113,227,0.07); }
-  .opt .opt-head { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; }
-  .opt .opt-time { color: var(--muted); font-weight: 500; white-space: nowrap; }
-  .opt .opt-note { color: var(--muted); }
   .pop-months { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--line);
     font-size: 11.5px; color: var(--muted); }
   .pop-months strong { color: var(--text); font-weight: 600; }
@@ -155,18 +119,40 @@
   .leaflet-tooltip.stop-label.maybe { color: var(--maybe); }
   .leaflet-tooltip.stop-label::before { display: none; }
 
-  /* Friendly failure if the map library can't load (e.g. offline) */
+  /* Friendly failure if Leaflet can't load (e.g. offline) */
   #map-error { display: none; padding: 40px; max-width: 460px; margin: auto; align-self: center; }
   #map-error h2 { font-size: 17px; margin: 0 0 10px; }
   #map-error p { font-size: 13.5px; color: var(--muted); line-height: 1.6; margin: 0 0 10px; }
 
-  /* Phones: map on top, list underneath */
   @media (max-width: 760px) {
-    #app { flex-direction: column-reverse; height: auto; }
-    #sidebar { width: 100%; height: auto; border-right: none; padding: 20px 16px 60px; }
-    #map { height: 46vh; flex: none; position: sticky; top: 0; z-index: 5; }
-    .leaflet-popup-content { width: 250px !important; }
+    #app { flex-direction: column; }
+    #sidebar { width: 100%; height: auto; max-height: 52vh; }
+    #map { height: 48vh; }
   }
+
+  /* ---------- Option switch (1 = Malaysia before the Thai islands, 2 = after) ---------- */
+  .option-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+  .option-switch button {
+    font-family: inherit; text-align: left; cursor: pointer; padding: 10px 12px;
+    border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--text);
+  }
+  .option-switch button:hover { background: var(--wash); }
+  .option-switch button.active { border-color: var(--text); box-shadow: inset 0 0 0 1px var(--text); }
+  .option-switch .option-title { display: block; font-size: 13px; font-weight: 600; }
+  .option-switch .option-detail { display: block; font-size: 11.5px; color: var(--muted); line-height: 1.4; margin-top: 2px; }
+
+  /* Budget rows per stretch of the trip */
+  .budget .stretch { font-size: 12.5px; padding: 5px 0; border-bottom: 1px solid var(--line); }
+  .budget .stretch:last-of-type { border-bottom: none; }
+  .budget .stretch .top-line { display: flex; justify-content: space-between; align-items: baseline; }
+  .budget .stretch .label { font-weight: 600; }
+  .budget .stretch .dates { color: var(--muted); font-size: 11.5px; }
+  .budget .stretch .numbers { color: var(--muted); font-size: 11.5px; margin-top: 1px; }
+
+  /* Badge styles (unused on the public page) */
+  .friend-tag { font-size: 9.5px; font-weight: 700; color: #1d8a45; letter-spacing: 0.06em;
+    border: 1px solid rgba(29,138,69,0.35); border-radius: 20px; padding: 1px 6px; text-transform: uppercase; white-space: nowrap; }
+  .pop-friend { display: inline-block; margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -183,29 +169,34 @@
 <div id="app">
   <aside id="sidebar">
     <h1>The Route</h1>
-    <p class="subtitle">Bangkok and back, winter 2026/27. Every stop in order, each with what to do there and every realistic way to get there. Tap a row or a dot for the detail. Red stops are the beats, the ones not to miss.</p>
+    <p class="subtitle">Bangkok and back, winter 2026/27. The route is the same up to Siem Reap. Pick an option below for how the rest unfolds. Tap a dot or a row for the detail.</p>
+
+    <!-- The two endings. Clicking one redraws the line, the dots, the list and the day budget. -->
+    <div class="option-switch" id="option-switch">
+      <button data-option="A">
+        <span class="option-title">Option 1</span>
+        <span class="option-detail">Cambodia done early January. Malaysia and Singapore before the Thai islands.</span>
+      </button>
+      <button data-option="B">
+        <span class="option-title">Option 2</span>
+        <span class="option-detail">Cambodia done mid-January. Malaysia and Singapore after the Thai islands.</span>
+      </button>
+    </div>
 
     <div class="budget" id="budget"></div>
 
-    <div class="filters">
-      <div class="flabel"><span>Show me</span><button id="clear-filters" hidden>Clear</button></div>
-      <div class="chips" id="chips"></div>
-    </div>
-
     <label class="toggle">
       <input type="checkbox" id="show-maybes" checked />
-      <span>Show maybes</span>
+      <span>Show undecided stops</span>
     </label>
 
     <div class="legend">
-      <div class="lrow"><span class="swatch ground"></span> Bus, train, car or scooter</div>
+      <div class="lrow"><span class="swatch ground"></span> Bus, train or car</div>
       <div class="lrow"><span class="swatch water"></span> Boat or ferry</div>
       <div class="lrow"><span class="swatch air"></span> Flight</div>
-      <div class="lrow"><span class="swatch spur"></span> Side trip, still a maybe</div>
-      <div class="lrow"><span class="dotmark beat"></span> A beat (7/7)</div>
-      <div class="lrow"><span class="dotmark"></span> Stop</div>
-      <div class="lrow"><span class="dotmark transit"></span> Transit or base</div>
-      <div class="lrow"><span class="dotmark hollow"></span> Maybe</div>
+      <div class="lrow"><span class="swatch spur"></span> Undecided, not yet in the line</div>
+      <div class="lrow"><span class="dotmark"></span> Confirmed stop</div>
+      <div class="lrow"><span class="dotmark hollow"></span> Still deciding</div>
     </div>
 
     <div id="stop-list"></div>
@@ -214,8 +205,8 @@
   <div id="map"></div>
   <div id="map-error">
     <h2>The map couldn't load</h2>
-    <p>The map needs an internet connection, because it fetches the map tiles and the mapping library from the web.</p>
-    <p>Check your connection and reload. The list of stops works either way. Tapping a row just won't move the map.</p>
+    <p>The map needs an internet connection the first time it opens, because it fetches the map tiles and the mapping library from the web.</p>
+    <p>Check your connection and reload the page. The full list of stops on the left works either way. Clicking a row just won't move the map.</p>
   </div>
 </div>
 
@@ -224,244 +215,625 @@
 </noscript>
 
 <script>
+/* ============================================================================
+   THE JOURNEY DATA
+   ----------------------------------------------------------------------------
+   The trip is built from three lists:
+     sharedRoute  - every stop from Bangkok to Siem Reap (same in both options)
+     endingA      - Option 1: Malaysia and Singapore BEFORE the Thai islands
+     endingB      - Option 2: Malaysia and Singapore AFTER the Thai islands
+   The map, the sidebar and the day budget all rebuild themselves from these.
 
+   Each stop has:
+     leg       - which section it belongs to (groups the sidebar)
+     name      - what shows on the map
+     coords    - [latitude, longitude]
+     nights    - suggested nights to sleep there (0 = pass through)
+     why, do, food, arrive, months - the text in the popup
+     mode      - how the LINE into this stop is drawn: ground | water | air
+     maybe     - true = undecided, drawn as a hollow dot on a dashed spur
+     spurFrom  - for undecided stops: the name of the stop it hangs off
+     maybeNote - for undecided stops: what it would take to fit it in
+============================================================================ */
+
+/* ---------- Stops that appear in both endings, with shared text ---------- */
+const KHAO_SOK = {
+  leg: "Thailand: Andaman", name: "Khao Sok", coords: [8.9167, 98.5333], nights: 3, stretch: "friend", mode: "air",
+  why: "A rainforest older than the Amazon around an emerald lake, and the stop most unlike anything else on the trip.",
+  do: "Kayak the lake between limestone towers, sleep in a floating raft house, a jungle trek, the caves, a dawn wildlife boat.",
+  food: "Home-style Thai cooked at the raft houses. Simple and very good.",
+  arrive: "Fly Bangkok → Surat Thani (about 1h10m), then 2 hours inland by bus or taxi.",
+  months: "Nov–Feb. The lake is full after the rains and the trails are passable."
+};
+const KO_LANTA = {
+  leg: "Thailand: Andaman", name: "Ko Lanta", coords: [7.6167, 99.0500], nights: 6, stretch: "friend", mode: "ground",
+  why: "The island base. Sit here and day-trip out instead of island-hopping with a backpack. Calm, long beaches, and the place to get Open Water certified if you want it.",
+  do: "Scuba course (3–4 days), the Ko Jum day trip, the Trang four-island boat, the quiet south end, sunset at a beach bar.",
+  food: "Southern coconut curries, roti, and seafood grilled on the sand.",
+  arrive: "Bus and ferry from Khao Sok via Krabi, about 4–5 hours all in.",
+  months: "Nov–Apr is the dry Andaman season. January is peak and perfect."
+};
+const KO_JUM = {
+  leg: "Thailand: Andaman", name: "Ko Jum", coords: [7.8167, 99.0333], nights: 0, stretch: "friend", mode: "water",
+  why: "A barely developed hammock island a short boat ride from Lanta. A day trip, so it costs no nights.",
+  do: "Nothing, on purpose. Beach walks and near-zero crowds.",
+  food: "Simple beach-shack seafood.",
+  arrive: "Short boat from Ko Lanta, there and back the same day.",
+  months: "Nov–Apr."
+};
+const PENANG_TEXT = {
+  name: "George Town, Penang", coords: [5.4141, 100.3288],
+  why: "The best eating city on the trip, and the strongest reason to be in Malaysia at all.",
+  do: "Eat, then eat again. Street art in the old town, Penang Hill, Kek Lok Si temple, a Peranakan mansion.",
+  food: "Char kway teow, assam laksa, nasi kandar, cendol, hokkien mee. Hawker centres: Gurney Drive, Chulia Street, New Lane.",
+  months: "Dec–Feb is the drier window on the west coast."
+};
+const CAMERON_TEXT = {
+  name: "Cameron Highlands", coords: [4.4700, 101.3800],
+  why: "Tea plantations and cool air in the middle of the peninsula. A green, quiet break from the heat and the cities.",
+  do: "Walk the tea estates, the mossy forest trail, one of the numbered jungle trails.",
+  food: "Tea and scones, oddly, plus steamboat hotpot in the evening cold.",
+  months: "Dec–Feb. Bring a fleece: it drops to about 10°C at night."
+};
+const KUALA_LUMPUR_TEXT = {
+  name: "Kuala Lumpur", coords: [3.1390, 101.6869], nights: 1,
+  why: "One night to break the journey between Singapore and the highlands. Long enough for the food street and the towers at night.",
+  do: "Jalan Alor food street, the Petronas Towers lit up, Batu Caves if you have a morning.",
+  food: "Nasi lemak, banana leaf curry, satay.",
+  months: "Humid and rainy year round. December to February is fine."
+};
+const SINGAPORE_TEXT = {
+  leg: "", name: "Singapore", coords: [1.3521, 103.8198], nights: 2,
+  why: "Two days of hawker food and a clean, easy city, plus the best flight connections in the region.",
+  do: "Gardens by the Bay, the hawker centres, a walk through Kampong Glam and Little India.",
+  food: "Hainanese chicken rice, chilli crab, laksa, kaya toast. Maxwell, Old Airport Road, Tekka.",
+  months: "Any month. It's the same weather every day of the year."
+};
+const MANILA_TEXT = {
+  leg: "Philippines", name: "Manila", coords: [14.5995, 120.9842], nights: 1, stretch: "after", mode: "air",
+  why: "One transit night, no more. It's the gateway to Palawan.",
+  do: "Intramuros if your flight timing gives you an afternoon. Otherwise sleep near the airport.",
+  food: "A proper Filipino meal before the islands: sisig, adobo, kare-kare.",
+  months: "Jan–Apr is the dry season and outside the typhoon window."
+};
+const PORT_BARTON_TEXT = {
+  leg: "Philippines", name: "Port Barton", coords: [10.4500, 119.2333], nights: 4, stretch: "after",
+  why: "The quiet Palawan stop. Where El Nido is commercialising, this is a sleepy bay with barely any development. A good place to slow down before the boat.",
+  do: "Very little, deliberately. Island-hop to near-empty sandbars, snorkel with turtles, walk to the waterfalls.",
+  food: "Simple beach-shack seafood, grilled that morning.",
+  months: "Jan–Apr. February is the sweet spot: dry, calm seas, before the Easter crowds."
+};
+const EL_NIDO_TEXT = {
+  leg: "Philippines", name: "El Nido", coords: [11.1800, 119.4160], stretch: "after",
+  why: "The lagoons are stunning and the town is drifting toward Bali. Treat it as the place the Tao boat leaves from, sleep away from the strip, and spend your time on the water.",
+  do: "Kayak into the Big and Small Lagoons at opening time, before the tour boats. Nacpan Beach.",
+  food: "Good traveller restaurants and fresh grilled seafood. Not the reason you're here.",
+  months: "Jan–Apr. Go into the lagoons at first light: it's the difference between magic and a queue."
+};
+const TAO = {
+  leg: "Philippines", name: "Tao Expedition", coords: [11.4833, 119.8500], nights: 5, stretch: "after", mode: "water",
+  why: "Five days on a traditional outrigger with about twenty people, sleeping in bamboo huts at island camps no day tour reaches. Snorkelling, meeting people and remoteness in one go. Touristy in the way that passes your filter: it's built around something real and hollows nothing out.",
+  do: "Snorkel reefs with nobody else on them, sleep in beach huts, eat what the crew cooks, rum by the fire. The stops nearest El Nido and Coron share water with the day tours; the middle days don't.",
+  food: "Bought from fishing villages along the way and cooked on board. Better than it has any right to be.",
+  arrive: "Departs El Nido by boat. Tao Philippines is the benchmark; Buhay Isla and Big Dream Boatman are cheaper and more party. Basic huts, shared toilets, and rough seas can reroute a day.",
+  months: "Jan–Apr for calm seas. Book months ahead: February departures sell out."
+};
+const CORON_TEXT = {
+  leg: "Philippines", name: "Coron", coords: [11.9983, 120.2042], stretch: "after", mode: "water",
+  why: "You're here for the underwater Coron. The town is forgettable and the packaged island-hopping is a conveyor belt, but the WWII wrecks sit shallow enough for a new diver.",
+  do: "Dive or snorkel the Lusong gunboat and Skeleton wreck. Kayangan Lake and Twin Lagoon at dawn, before the boats. Skip the standard hopping tour.",
+  food: "Decent seafood, and the best calamansi juice you'll have.",
+  arrive: "The Tao boat ends here.",
+  months: "Jan–Apr. Dawn is the whole strategy: go early and you get it to yourself."
+};
+const BANGKOK_MEET_TEXT = {
+  leg: "Thailand: Andaman", name: "Bangkok (passing through)", coords: [13.7563, 100.5018], nights: 1, stretch: "friend", mode: "air",
+  why: "One night back in Bangkok on the way south to the islands.",
+  do: "A Chinatown food crawl, if there is energy for it.",
+  food: "Whatever got missed the first time.",
+  months: "Nov–Feb, cool and dry."
+};
+const BANGKOK_END_TEXT = {
+  leg: "Home", name: "Bangkok (last nights)", coords: [13.7563, 100.5018], stretch: "after", mode: "air",
+  why: "The end of the trip. The flight home leaves from here.",
+  do: "Whatever you missed in November. Ayutthaya is a free day trip if you're restless.",
+  food: "One last round of boat noodles and mango sticky rice.",
+  arrive: "Fly Coron → Manila → Bangkok (Manila → Bangkok is about 3.5 hours).",
+  months: "Nov–Feb is the cool dry season."
+};
+const KUCHING_TEXT = {
+  leg: "Malaysian Borneo (maybe)", name: "Kuching", coords: [1.5535, 110.3593], nights: 3, maybe: true, mode: "air",
+  why: "Borneo: a charming small city with real Dayak culture and great food, and the gateway to Bako.",
+  do: "The waterfront and old town, Sarawak Cultural Village, a longhouse visit, the museums.",
+  food: "Sarawak laksa, kolo mee, midin fern.",
+  months: "Mar–Sep is best. Dec–Feb is Kuching's wettest stretch, so go only on a decent forecast."
+};
+const BAKO_TEXT = {
+  leg: "Malaysian Borneo (maybe)", name: "Bako National Park", coords: [1.7167, 110.4667], nights: 2, maybe: true,
+  spurFrom: "Kuching", mode: "water",
+  why: "Easy coastal hiking with proboscis monkeys an hour from Kuching. The reason to go to Sarawak at all, alongside the food.",
+  do: "The coastal trails, the sea stack at Telok Pandan Kecil, proboscis monkeys and bearded pigs at dusk.",
+  food: "The park canteen. Bring snacks.",
+  arrive: "Bus, then an open boat from Kuching. That boat is the risk: it gets cancelled in rough seas, which is what Dec–Feb brings.",
+  months: "Mar–Sep. In January or February, check the sea forecast the day before."
+};
+
+/* ---------- Shared route: Bangkok to Siem Reap ---------- */
+const sharedRoute = [
+  /* Thailand, north */
+  {
+    leg: "Thailand: North", name: "Bangkok", coords: [13.7563, 100.5018], nights: 4, stretch: "before", mode: "air",
+    why: "The entry point, because SAS flies direct from Copenhagen. An easy country to land in while you adjust, and the best street food on the route.",
+    do: "Night food crawl through Chinatown (Yaowarat), Wat Pho and Wat Arun, a longtail boat down the canals, one rooftop bar.",
+    food: "The full spectrum: boat noodles, pad krapow, som tam, mango sticky rice.",
+    arrive: "Direct flight from Copenhagen, about 11 hours.",
+    months: "Nov–Feb is the cool dry season and the best window of the year."
+  },
+  {
+    leg: "Still deciding", name: "Ayutthaya", coords: [14.3532, 100.5488], nights: 0, maybe: true, stretch: "before",
+    spurFrom: "Bangkok", mode: "ground",
+    why: "A free day trip: Thailand's ruined former capital, with temple spires and a Buddha head in banyan roots. Works at the start or the end of the trip.",
+    do: "Wat Mahathat, Wat Chaiwatthanaram at sunset, rent a bike to cover the ruins.",
+    food: "Boat noodles by the river, the town's specialty.",
+    arrive: "Train from Bangkok, about 1.5 hours each way. There and back the same day.",
+    months: "Nov–Feb, cool and dry."
+  },
+  {
+    leg: "Thailand: North", name: "Chiang Mai", coords: [18.7883, 98.9853], nights: 5, stretch: "before", mode: "air",
+    why: "The northern base and your mountain trekking. Use it as a base and day-trip out.",
+    do: "A hill trek with a local guide, an ethical elephant sanctuary, a cooking class, the old-city temples.",
+    food: "Khao soi (curry noodles) is the reason to be here. Also sai ua sausage and the Sunday walking-street stalls.",
+    arrive: "Fly direct from Bangkok, about 1h15m.",
+    months: "Nov–Feb is peak: cool, dry, clear."
+  },
+  {
+    leg: "Thailand: North", name: "Pai", coords: [19.3583, 98.4400], nights: 4, stretch: "before", mode: "ground",
+    why: "A mountain town at the top of a hairpin road, and the trip's first proper slow-down. Small enough that you keep running into the same people.",
+    do: "Hot springs, the canyon at sunset, waterfalls, tubing the river.",
+    food: "A café and night-market scene far bigger than the town's size justifies.",
+    arrive: "Minibus from Chiang Mai: 3 hours and 762 curves. Take a motion sickness tablet.",
+    months: "Nov–Feb. Mornings are cold, so bring one warm layer."
+  },
+  {
+    leg: "Thailand: North", name: "Chiang Rai", coords: [19.9105, 99.8406], nights: 1, stretch: "before", mode: "ground",
+    why: "A staging post. You sleep here to catch the border run to the Mekong boat the next morning.",
+    do: "Wat Rong Khun (the White Temple) fills the afternoon.",
+    food: "Good northern Thai and a solid night bazaar.",
+    arrive: "Bus from Pai via Chiang Mai, most of a day.",
+    months: "Nov–Feb."
+  },
+
+  /* Laos */
+  {
+    leg: "Laos", name: "Pakbeng", coords: [19.8878, 101.1500], nights: 1, stretch: "before", mode: "water",
+    why: "The overnight halfway down the Mekong. You come because the slow boat stops for the night.",
+    do: "Eat, sleep, get back on the boat.",
+    food: "Simple guesthouse Lao food.",
+    arrive: "Bus Chiang Rai → Chiang Khong, cross the Friendship Bridge to Huay Xai, then day one of the two-day slow boat.",
+    months: "Nov–Feb. The river is high enough after the rains and the air is clear."
+  },
+  {
+    leg: "Laos", name: "Luang Prabang", coords: [19.8867, 102.1350], nights: 4, stretch: "before", mode: "water",
+    why: "Touristy and still completely itself. A UNESCO town of gilded temples between two rivers.",
+    do: "Kuang Si Falls (turquoise pools you can swim in), Mount Phousi at sunset, the dawn alms ceremony, the night market. Utopia bar for a social evening.",
+    food: "Laap, Mekong river fish, Luang Prabang sausage, and the best baguettes in Asia.",
+    arrive: "Day two of the slow boat delivers you straight into town.",
+    months: "Nov–Feb is the dry cool season."
+  },
+
+  /* Vietnam */
+  {
+    leg: "Vietnam", name: "Hanoi", coords: [21.0278, 105.8342], nights: 3, stretch: "before", mode: "air",
+    why: "The northern capital and the country's street-food headquarters. Effortless for meeting people solo.",
+    do: "Walk the Old Quarter with no plan, the train street, Hoan Kiem lake at dawn, a bia hoi corner in the evening.",
+    food: "Bun cha, pho bo, banh cuon, egg coffee. Eat from plastic stools on the pavement.",
+    arrive: "Fly Luang Prabang → Hanoi, 1 hour. The overland alternative is a 24-hour bus.",
+    months: "Nov–Dec is cool and dry."
+  },
+  {
+    leg: "Still deciding", name: "Sapa", coords: [22.3364, 103.8438], nights: 3, maybe: true, stretch: "before",
+    spurFrom: "Hanoi", mode: "ground",
+    maybeNote: "Weather dependent: go only if the forecast is clear.",
+    why: "Village-to-village walks through terraced valleys, on foot with no bike needed. December brings cold and heavy fog, so this only pays off on a clear forecast.",
+    do: "Walk to Cat Cat, Lao Chai and Ta Van with a Hmong or Dao guide, one night in a homestay, Fansipan if the sky is clear.",
+    food: "Grilled skewers, black chicken hotpot, corn wine at the night market.",
+    arrive: "Sleeper bus or train from Hanoi to Lao Cai (5–6 hours), then 1 hour up to Sapa. Three days including both travel legs.",
+    months: "Mar–May and Sep–Nov are best. Dec–Feb is cold with fog, and a clear day is luck."
+  },
+  {
+    leg: "Vietnam", name: "Mai Chau", coords: [20.6600, 105.0900], nights: 2, stretch: "before", mode: "ground",
+    why: "A green valley of White Thai stilt-house villages, reachable in an afternoon.",
+    do: "Cycle the valley floor between villages, a short hill walk, a stilt-house homestay.",
+    food: "Home-cooked at the homestay: sticky rice in bamboo, grilled river fish.",
+    arrive: "Bus from Hanoi, about 3.5 hours.",
+    months: "Nov–Dec while the valley is still green and dry."
+  },
+  {
+    leg: "Vietnam", name: "Ninh Binh", coords: [20.2506, 105.9744], nights: 3, stretch: "before", mode: "ground",
+    why: "Limestone towers rising out of rice paddies, seen from a rowboat. The karst stop of the trip.",
+    do: "The Tam Coc or Trang An rowboat, cycle between the temples, climb Hang Mua's steps for the view.",
+    food: "Goat meat is the local speciality, plus com chay (crispy rice).",
+    arrive: "About 3 hours by road from Mai Chau, across the hills without going back through Hanoi. Book a social hostel.",
+    months: "Nov–Dec."
+  },
+  {
+    leg: "Vietnam", name: "Hue", coords: [16.4637, 107.5909], nights: 1, stretch: "before", mode: "ground",
+    why: "One night, mostly a launchpad for the scenic train to Da Nang. The walled citadel is worth the half day you have.",
+    do: "The walled citadel.",
+    food: "Bun bo Hue, the city's fiery beef noodle soup.",
+    arrive: "Overnight sleeper train from Ninh Binh, about 10 hours. Ninh Binh is on the main north–south line, so no flight needed.",
+    months: "Hue is the wettest city in Vietnam Oct–Dec. Another reason to keep it to one night."
+  },
+  {
+    leg: "Vietnam", name: "Da Nang", coords: [16.0544, 108.2022], nights: 0, stretch: "before", mode: "ground",
+    why: "Where you get off the train. The Hue–Da Nang coastal leg is the attraction, then 30 minutes to Hoi An.",
+    do: "Walk off the platform and into a car.",
+    food: "A banh mi at the station.",
+    arrive: "The Hue → Da Nang train, 2.5 hours along the coast. Sit on the right-hand side heading south.",
+    months: "Any month. The train runs regardless."
+  },
+  {
+    leg: "Vietnam", name: "Hoi An", coords: [15.8801, 108.3380], nights: 4, stretch: "before", mode: "ground",
+    why: "The lantern-lit old town, and the best eating in Vietnam in a small, calm place.",
+    do: "A cooking class, get one thing tailored, cycle to the beach, the riverside lanterns after dark.",
+    food: "Cao lau, white rose dumplings, banh mi from Phuong, com ga.",
+    arrive: "30 minutes by car from Da Nang station.",
+    months: "Feb–May is ideal. December is cooler with some rain but workable."
+  },
+  {
+    leg: "Vietnam", name: "Da Lat", coords: [11.9404, 108.4583], nights: 3, stretch: "before", mode: "air",
+    why: "Cool pine highlands and the start of the Easy Rider ride, the scooter highlight of the trip.",
+    do: "Canyoning (a group activity, which helps socially), the lake and the pine trails.",
+    food: "Highland produce, artichoke tea, strawberry everything, decent local wine.",
+    arrive: "Fly Da Nang → Da Lat, about 1h10m.",
+    months: "Dec–Mar is dry season. Bring a jacket: it gets cold at night."
+  },
+  {
+    leg: "Vietnam", name: "Mui Ne", coords: [10.9333, 108.2833], nights: 2, stretch: "before", mode: "ground",
+    why: "The end of the two-day Easy Rider ride: pillion behind a local guide through the Central Highlands to the coast. The two nights cover one on the road and one here.",
+    do: "The red and white sand dunes at sunrise, the fishing village, the fairy stream.",
+    food: "Seafood straight off the boats. This is where fish sauce is made.",
+    arrive: "Two days on the back of a guide's motorbike from Da Lat, overnight en route. Luggage goes by car.",
+    months: "December is dry and reliable here."
+  },
+  {
+    leg: "Vietnam", name: "Ho Chi Minh City", coords: [10.8231, 106.6297], nights: 1, stretch: "before", mode: "ground",
+    why: "One night to see the War Remnants Museum and catch the flight to Cambodia.",
+    do: "The War Remnants Museum, a street-food evening in District 1.",
+    food: "Broken rice, banh xeo, the best iced coffee in the country.",
+    arrive: "Bus from Mui Ne, about 4–5 hours.",
+    months: "Dec–Apr is the southern dry season."
+  },
+
+  /* Cambodia */
+  {
+    leg: "Cambodia", name: "Phnom Penh", coords: [11.5564, 104.9282], nights: 2, stretch: "before", mode: "air",
+    why: "Two nights: one heavy day of history, one lighter day of city. You can't understand Cambodia without it.",
+    do: "Tuol Sleng (S-21) and the Killing Fields on one day. The Royal Palace, National Museum and Russian Market on the other. Riverside bars in the evening.",
+    food: "Excellent Khmer food and a good bar scene along the river.",
+    arrive: "Fly Ho Chi Minh City → Phnom Penh, about 1 hour. The new Techo airport is about an hour south of the city.",
+    months: "Nov–Feb, the cool dry season."
+  },
+  {
+    leg: "Still deciding", name: "Kampot", coords: [10.5940, 104.1640], nights: 3, maybe: true, stretch: "before",
+    spurFrom: "Phnom Penh", mode: "ground",
+    maybeNote: "Go straight from the airport to Kampot, then do Phnom Penh on the way back north.",
+    why: "The calm Cambodia stop: a slow river town with pepper farms and the crab market at Kep next door.",
+    do: "Kayak the river at sunset, a pepper farm tour, the Bokor Mountain road, a day trip to Kep for crab.",
+    food: "Kampot pepper crab, eaten at the Kep market on a plastic chair.",
+    arrive: "Taxi or bus from Phnom Penh, about 3–4 hours.",
+    months: "Nov–Feb is dry and cool."
+  },
+  {
+    leg: "Cambodia", name: "Siem Reap", coords: [13.3671, 103.8448], nights: 4, stretch: "before", mode: "ground",
+    why: "Angkor, and the clearest case of crowds being worth it anywhere on the trip. Four nights lets you do it properly.",
+    do: "Sunrise at Angkor Wat, then Bayon and Ta Prohm early. A second day on the remote temples: Beng Mealea, Koh Ker, Banteay Srei. Pub Street for the social evening.",
+    food: "Fish amok, lok lak, and a good modern Khmer restaurant scene.",
+    arrive: "Bus from Phnom Penh, about 6 hours (Giant Ibis is the comfortable one). Flying saves little: both airports are about an hour from town.",
+    months: "Nov–Feb is the best window: dry, cooler, and the moats still hold water."
+  }
+];
+
+/* ---------- Option 1: Malaysia and Singapore before the Thai islands ---------- */
+const endingA = [
+  { ...SINGAPORE_TEXT, leg: "Singapore and Malaysia, solo", stretch: "before", mode: "air",
+    arrive: "Direct flight from Siem Reap, about 2 hours." },
+  { ...KUCHING_TEXT, stretch: "before", spurFrom: "Singapore",
+    maybeNote: "Fits in this option: there are spare nights in January. Fly Singapore → Kuching, then Kuching → Kuala Lumpur.",
+    arrive: "Direct flight from Singapore, about 1.5 hours. Fly on to Kuala Lumpur afterwards." },
+  { ...BAKO_TEXT, stretch: "before" },
+  { ...KUALA_LUMPUR_TEXT, leg: "Singapore and Malaysia, solo", stretch: "before", mode: "ground",
+    arrive: "Train or bus from Singapore, about 5 hours. If you do Borneo, fly in from Kuching instead." },
+  { ...CAMERON_TEXT, leg: "Singapore and Malaysia, solo", nights: 3, stretch: "before", mode: "ground",
+    arrive: "Bus from Kuala Lumpur, about 4 hours up into the hills." },
+  { ...PENANG_TEXT, leg: "Singapore and Malaysia, solo", nights: 6, stretch: "before", mode: "ground",
+    arrive: "Bus down from the hills, about 5 hours. Finish here on the best food, then fly direct to Bangkok." },
+  { ...BANGKOK_MEET_TEXT, arrive: "Direct flight from Penang, about 1.5 hours." },
+  { ...KHAO_SOK },
+  { ...KO_LANTA },
+  { ...KO_JUM },
+  { leg: "Thailand: Andaman", name: "Ko Kradan", coords: [7.3167, 99.2500], nights: 2, stretch: "friend", mode: "water",
+    why: "Often voted Thailand's best beach. Snorkelling straight off the sand.",
+    do: "Snorkel from the beach, and the Emerald Cave at Ko Muk on the way: a swim through a dark sea tunnel into a hidden beach.",
+    food: "A handful of beach restaurants. That's the whole island.",
+    arrive: "Boat from Ko Lanta, about 2 hours, usually with the four-island Trang tour.",
+    months: "Nov–Apr. Outside that the boats stop running." },
+  { leg: "Thailand: Andaman", name: "Ko Lipe", coords: [6.4889, 99.3025], nights: 3, maybe: true, stretch: "friend",
+    spurFrom: "Ko Kradan", mode: "water",
+    maybeNote: "Fits in the island stretch, but the way out is from further south: boat to Pak Bara, then Hat Yai airport.",
+    why: "The clearest water in Thailand. In this option it isn't needed as a ferry link, so it's a third island that repeats Kradan.",
+    do: "Snorkel the small islands around it, walk between the three beaches. Sleep on Sunrise or Sunset Beach, away from the busy main beach.",
+    food: "Walking Street seafood barbecue.",
+    arrive: "Boat from Ko Kradan, about 2–3 hours.",
+    months: "Nov–Apr only. The island shuts in low season." },
+  { ...MANILA_TEXT,
+    arrive: "Boat back to the mainland, then fly Krabi → Manila with one connection (Bangkok or Kuala Lumpur)." },
+  { ...PORT_BARTON_TEXT, mode: "air",
+    arrive: "Fly Manila → Puerto Princesa, then about 3.5 hours by van north." },
+  { ...EL_NIDO_TEXT, nights: 2, mode: "ground",
+    arrive: "Van from Port Barton, about 3 hours up the coast." },
+  { ...TAO },
+  { ...CORON_TEXT, nights: 3 },
+  { ...BANGKOK_END_TEXT, nights: 5 }
+];
+
+/* ---------- Option 2: Malaysia and Singapore after the Thai islands ---------- */
+const endingB = [
+  { ...BANGKOK_MEET_TEXT, arrive: "Fly Siem Reap → Bangkok, about 1 hour." },
+  { ...KHAO_SOK },
+  { ...KO_LANTA },
+  { ...KO_JUM },
+  { leg: "Thailand: Andaman", name: "Ko Kradan", coords: [7.3167, 99.2500], nights: 2, stretch: "friend", mode: "water",
+    why: "Often voted Thailand's best beach. Snorkelling straight off the sand.",
+    do: "Snorkel from the beach, and the Emerald Cave at Ko Muk on the way: a swim through a dark sea tunnel into a hidden beach.",
+    food: "A handful of beach restaurants. That's the whole island.",
+    arrive: "Boat from Ko Lanta, about 2 hours, usually with the four-island Trang tour.",
+    months: "Nov–Apr. Outside that the boats stop running." },
+  { leg: "Thailand: Andaman", name: "Ko Lipe", coords: [6.4889, 99.3025], nights: 3, stretch: "friend", mode: "water",
+    why: "The clearest water in Thailand, and the ferry link to Malaysia.",
+    do: "Snorkel the small islands around it, walk between the three beaches. Sleep on Sunrise or Sunset Beach, away from the busy main beach.",
+    food: "Walking Street seafood barbecue.",
+    arrive: "Boat from Ko Kradan, about 2–3 hours.",
+    months: "Nov–Apr only. The island shuts in low season." },
+  { leg: "Malaysia and Singapore", name: "Langkawi", coords: [6.3500, 99.8000], nights: 1, stretch: "after", mode: "water",
+    why: "The landing point in Malaysia. One night to clear the border and catch the boat south.",
+    do: "The cable car and sky bridge if you have the afternoon. Otherwise rest.",
+    food: "Duty-free beer, a novelty after Thai prices.",
+    arrive: "International ferry Ko Lipe → Langkawi, 1.5 hours. Runs Oct–May.",
+    months: "Nov–Mar is dry on this coast." },
+  { ...PENANG_TEXT, leg: "Malaysia and Singapore", nights: 4, stretch: "after", mode: "water",
+    arrive: "Ferry from Langkawi, about 3 hours, or a 40-minute flight." },
+  { ...CAMERON_TEXT, leg: "Malaysia and Singapore", nights: 2, stretch: "after", mode: "ground",
+    arrive: "Bus from Penang, about 5 hours up into the hills." },
+  { ...KUALA_LUMPUR_TEXT, leg: "Malaysia and Singapore", stretch: "after", mode: "ground",
+    arrive: "Bus down from the hills, about 4 hours." },
+  { ...KUCHING_TEXT, stretch: "after", spurFrom: "Kuala Lumpur",
+    maybeNote: "Doesn't fit in this option without dropping something: February has about one spare night. It would cost Cameron Highlands or Singapore.",
+    arrive: "Fly Kuala Lumpur → Kuching, 2 hours. Fly Kuching → Singapore direct afterwards." },
+  { ...BAKO_TEXT, stretch: "after" },
+  { ...SINGAPORE_TEXT, leg: "Malaysia and Singapore", stretch: "after", mode: "ground",
+    arrive: "Train or bus from Kuala Lumpur, about 5 hours, or a 1-hour flight." },
+  { ...MANILA_TEXT, arrive: "Direct flight from Singapore, about 3.5 hours." },
+  { ...EL_NIDO_TEXT, nights: 1, mode: "air",
+    arrive: "Fly Manila → El Nido direct (small plane, pricier), or fly to Puerto Princesa and take a 5–6 hour van." },
+  { ...PORT_BARTON_TEXT, maybe: true, spurFrom: "El Nido", mode: "ground",
+    maybeNote: "Doesn't fit in this option without dropping something. It would cost Singapore plus a night elsewhere.",
+    arrive: "Fly Manila → Puerto Princesa, then 3.5 hours by van. El Nido is 3 hours further up the coast." },
+  { ...TAO },
+  { ...CORON_TEXT, nights: 2 },
+  { ...BANGKOK_END_TEXT, nights: 3 }
+];
+
+/* ---------- What each option means, shown under the night count ---------- */
+const NIGHTS_AVAILABLE = 102;
+const OPTION_NOTES = {
+  A: "Option 1: Cambodia done early January, then Singapore and Malaysia (Borneo if the weather allows), the Thai islands, and the Philippines.",
+  B: "Option 2: Cambodia done mid-January. The extra time goes into Sapa, Kampot and longer stays. Then the Thai islands, Malaysia, Singapore and the Philippines. The last stretch is full, so Port Barton and Borneo only fit if something else drops."
+};
 
 /* ============================================================================
    BUILD THE MAP AND SIDEBAR
 ============================================================================ */
 
-// If the map library didn't load (usually no internet), show a human message instead of a blank page.
-if (typeof L === "undefined") {
+// If Leaflet didn't load (usually no internet), show a human message instead of a blank page.
+const mapLibraryLoaded = typeof L !== "undefined";
+if (!mapLibraryLoaded) {
   document.getElementById("map").style.display = "none";
   document.getElementById("map-error").style.display = "block";
 }
 
-const byId = Object.fromEntries(journey.map(s => [s.id, s]));
-const lineStops = journey.filter(s => !s.spurFrom);           // everything on the main line, including in-line maybes
-const sideStops = journey.filter(s =>  s.spurFrom);           // side trips hanging off the line
-const nightsOf  = s => s.nights + (s.overnightTravel || 0);   // nights asleep here, plus nights on a night bus or train to get here
+const listElement = document.getElementById("stop-list");
+const showMaybesCheckbox = document.getElementById("show-maybes");
+let map = null;
+let layers = {};
+let markerByName = {};
 
-/* ---------- Night budget ---------- */
-const NIGHTS_AVAILABLE = 103; // 15 Nov 2026 to 26 Feb 2027
-
-const coreNights   = lineStops.filter(s => !s.maybe).reduce((sum, s) => sum + nightsOf(s), 0);
-const inlineMaybe  = lineStops.filter(s =>  s.maybe).reduce((sum, s) => sum + nightsOf(s), 0);
-const sideMaybe    = sideStops.reduce((sum, s) => sum + (s.cost || 0), 0);
-const spareWith = used => NIGHTS_AVAILABLE - used;
-
-function spareLabel(used) {
-  const spare = spareWith(used);
-  return spare >= 0
-    ? `<span class="v fits">${used} · ${spare} spare</span>`
-    : `<span class="v over">${used} · ${-spare} over</span>`;
+// Set up the base map once. The route layers are redrawn every time the option changes.
+if (mapLibraryLoaded) {
+  map = L.map("map", { zoomControl: true, scrollWheelZoom: true }).setView([12.5, 106], 5);
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
+    attribution: "Tiles &copy; Esri",
+    maxZoom: 16
+  }).addTo(map);
+  layers.route      = L.layerGroup().addTo(map);
+  layers.routeDots  = L.layerGroup().addTo(map);
+  layers.spurs      = L.layerGroup().addTo(map);
+  layers.spurDots   = L.layerGroup().addTo(map);
 }
 
-document.getElementById("budget").innerHTML = `
-  <div class="row"><span class="k">Nights available</span><span class="v">${NIGHTS_AVAILABLE}</span></div>
-  <div class="row"><span class="k">Definite stops</span>${spareLabel(coreNights)}</div>
-  <div class="row"><span class="k">+ maybes on the line (+${inlineMaybe})</span>${spareLabel(coreNights + inlineMaybe)}</div>
-  <div class="row total"><span class="k">+ Banaue &amp; Batad too (+${sideMaybe})</span>${spareLabel(coreNights + inlineMaybe + sideMaybe)}</div>
-  <div class="note">Counted in nights, including nights on a night bus or train. Travel days eat daytime, not nights. Every maybe you add uses up spare nights, and taking all of them leaves the trip full.</div>
-`;
-
-/* ---------- Small helpers for labels ---------- */
-const scoreTag = s => s.score ? `<span class="tag score s${s.score}">${s.score}/7</span>` : "";
-const roleTag  = s => s.role ? `<span class="tag role">${s.role}</span>` : "";
-const maybeTag = s => s.maybe ? `<span class="tag maybe">maybe</span>` : "";
-const nightsText = s => s.nights === 0 ? "pass through" : s.nights + (s.nights === 1 ? " night" : " nights");
-const pickedOption = s => (s.travel || []).find(t => t.pick) || (s.travel || [])[0];
-
-/* ---------- Map ---------- */
-let map;
-const layers = {};
-const markerById = {};
-
-const strokeFor = mode => {
+// How each kind of travel line looks.
+function lineStyleFor(mode) {
   if (mode === "water") return { color: "#0071e3", weight: 2.6, opacity: 0.85 };
   if (mode === "air")   return { color: "#8e8e93", weight: 2, opacity: 0.8, dashArray: "2,9" };
   return { color: "#1d1d1f", weight: 2.4, opacity: 0.7 };
-};
-
-const popupHtml = (s, order) => `
-  <div class="pop-head">
-    <span class="pop-name">${s.name}</span>
-    <span class="pop-nights">${s.maybe && s.spurFrom ? "+" + s.cost + " nights" : nightsText(s)}</span>
-  </div>
-  <div class="pop-country">${order ? "Stop " + order + " · " : ""}${s.leg} ${scoreTag(s)} ${roleTag(s)} ${maybeTag(s)}</div>
-  <div class="pop-why">${s.why}</div>
-  <div class="pop-field"><span class="lab">Do</span><span class="val">${s.do}</span></div>
-  ${s.food && s.food !== "—" ? `<div class="pop-field"><span class="lab">Eat</span><span class="val">${s.food}</span></div>` : ""}
-  ${s.stay ? `<div class="pop-field"><span class="lab">Stay</span><span class="val">${s.stay.map(a => a.area).join(" · ")}</span></div>` : ""}
-  <div class="pop-travel">
-    <div class="lab">Getting here</div>
-    ${(s.travel || []).map(t => `
-      <div class="opt ${t.pick ? "pick" : ""}">
-        <div class="opt-head"><span>${t.pick && s.travel.length > 1 ? "★ " : ""}${t.how}</span><span class="opt-time">${t.time}</span></div>
-        ${t.note ? `<div class="opt-note">${t.note}</div>` : ""}
-      </div>`).join("")}
-  </div>
-  ${s.months && s.months !== "—" ? `<div class="pop-months"><strong>Timing:</strong> ${s.months}</div>` : ""}
-  ${s.skip ? `<div class="pop-maybe">A maybe. If you skip it: ${s.skip}</div>` : ""}
-  ${s.spurFrom ? `<div class="pop-maybe">A maybe side trip. Adds about ${s.cost} ${s.cost === 1 ? "night" : "nights"}.</div>` : ""}
-`;
-
-function dotHtml(s) {
-  if (s.maybe) {
-    return { size: 12, html: `<div class="marker-dot" style="width:12px;height:12px;background:#fff;border:2.5px solid #c7900d"></div>` };
-  }
-  const isBeat = s.score === 7;
-  const isMinor = s.role === "transit" || s.nights === 0;
-  const size = isBeat ? 16 : isMinor ? 9 : 12;
-  const color = isBeat ? "#d0342c" : isMinor ? "#a1a1a6" : "#1d1d1f";
-  return { size, html: `<div class="marker-dot" style="width:${size}px;height:${size}px;background:${color};border:2.5px solid #fff"></div>` };
 }
 
-// Draws the main line through every stop that's currently shown.
-function drawLine(showMaybes) {
-  layers.line.clearLayers();
-  const shown = lineStops.filter(s => showMaybes || !s.maybe);
-  for (let i = 1; i < shown.length; i++) {
-    const from = shown[i - 1], to = shown[i];
-    const style = (from.maybe || to.maybe)
-      ? { color: "#c7900d", weight: 2, opacity: 0.8, dashArray: "1,6" }
-      : strokeFor(to.mode);
-    L.polyline([from.coords, to.coords], style)
+function nightsText(nights) {
+  if (nights === 0) return "pass through";
+  return nights + (nights === 1 ? " night" : " nights");
+}
+
+// The popup shown when you click a dot.
+function popupHtml(stop, stopNumber) {
+  return `
+    <div class="pop-head">
+      <span class="pop-name">${stop.name}</span>
+      <span class="pop-nights">${nightsText(stop.nights)}</span>
+    </div>
+    <div class="pop-country">${stopNumber ? "Stop " + stopNumber + " · " : ""}${stop.leg}</div>
+    <div class="pop-why">${stop.why}</div>
+    <div class="pop-field"><span class="lab">Do</span><span class="val">${stop.do}</span></div>
+    <div class="pop-field"><span class="lab">Eat</span><span class="val">${stop.food}</span></div>
+    <div class="pop-field"><span class="lab">Getting&nbsp;here</span><span class="val">${stop.arrive}</span></div>
+    <div class="pop-months"><strong>Best months:</strong> ${stop.months}</div>
+    ${stop.maybe ? `<div class="pop-maybe">Not yet in the line. ${stop.nights === 0
+        ? "It's a day trip, so it costs no nights."
+        : "Adds about " + nightsText(stop.nights) + "."} ${stop.maybeNote || ""}</div>` : ""}
+  `;
+}
+
+// The night count: nights planned in this option against nights in the trip.
+function drawBudget(journey, option) {
+  const planned = journey.filter(stop => !stop.maybe).reduce((sum, stop) => sum + stop.nights, 0);
+  const maybes  = journey.filter(stop => stop.maybe).reduce((sum, stop) => sum + stop.nights, 0);
+  const spare = NIGHTS_AVAILABLE - planned;
+  document.getElementById("budget").innerHTML = `
+    <div class="row"><span class="k">Nights in the trip</span><span class="v">${NIGHTS_AVAILABLE}</span></div>
+    <div class="row"><span class="k">Nights planned</span><span class="v">${planned}</span></div>
+    <div class="row total"><span class="k">Spare for travel days and slow days</span>
+      <span class="v ${spare >= 0 ? "fits" : "over"}">${spare >= 0 ? spare : -spare + " over"}</span></div>
+    <div class="row"><span class="k">Maybes would add</span><span class="v">+${maybes}</span></div>
+    <div class="note">${OPTION_NOTES[option]}</div>`;
+}
+
+// The line, the dots and the dashed spurs on the map.
+function drawMap(journey) {
+  if (!map) return;
+  Object.values(layers).forEach(layer => layer.clearLayers());
+  markerByName = {};
+
+  const confirmed = journey.filter(stop => !stop.maybe);
+  const maybes = journey.filter(stop => stop.maybe);
+
+  // Solid route, one segment at a time, styled by how you travel into each stop.
+  for (let i = 1; i < confirmed.length; i++) {
+    const from = confirmed[i - 1], to = confirmed[i];
+    L.polyline([from.coords, to.coords], lineStyleFor(to.mode))
       .bindTooltip(`${from.name} → ${to.name}`, { sticky: true })
-      .addTo(layers.line);
+      .addTo(layers.route);
   }
-}
 
-if (typeof L !== "undefined") {
-  map = L.map("map", { zoomControl: true, scrollWheelZoom: true }).setView([12.5, 106], 5);
-
-  // Light grey background map from Esri (free, no key needed), with place names on a second layer on top.
-  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
-    attribution: "Tiles &copy; Esri", maxZoom: 16
-  }).addTo(map);
-  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}", {
-    maxZoom: 16
-  }).addTo(map);
-
-  layers.line      = L.layerGroup().addTo(map);
-  layers.dots      = L.layerGroup().addTo(map);
-  layers.maybeDots = L.layerGroup().addTo(map);
-  layers.spurs     = L.layerGroup().addTo(map);
-
-  drawLine(true);
-
-  // Dotted lines from each side trip back to the stop it branches off.
-  sideStops.forEach(s => {
-    const anchor = byId[s.spurFrom];
-    if (anchor) {
-      L.polyline([anchor.coords, s.coords],
-        { color: "#c7900d", weight: 1.8, opacity: 0.75, dashArray: "1,7" })
-        .bindTooltip(`Maybe: side trip from ${anchor.name}`, { sticky: true })
-        .addTo(layers.spurs);
-    }
+  // Dashed spurs from each undecided stop back to the stop it hangs off.
+  maybes.forEach(stop => {
+    const anchor = journey.find(other => other.name === stop.spurFrom);
+    if (!anchor) return;
+    L.polyline([anchor.coords, stop.coords], { color: "#c7900d", weight: 1.8, opacity: 0.75, dashArray: "1,7" })
+      .bindTooltip(`Undecided: would branch from ${anchor.name}`, { sticky: true })
+      .addTo(layers.spurs);
   });
 
-  // One dot per stop.
-  let order = 0;
-  journey.forEach(s => {
-    if (!s.maybe) order++;
-    const dot = dotHtml(s);
-    const m = L.marker(s.coords, {
-      icon: L.divIcon({ className: "", iconSize: [dot.size, dot.size], iconAnchor: [dot.size / 2, dot.size / 2], html: dot.html }),
-      zIndexOffset: s.score === 7 ? 500 : 0
+  // Confirmed dots: bigger for longer stays, grey for pass-throughs.
+  confirmed.forEach((stop, index) => {
+    const size = stop.nights >= 4 ? 15 : stop.nights === 0 ? 8 : 11;
+    const marker = L.marker(stop.coords, {
+      icon: L.divIcon({
+        className: "", iconSize: [size, size], iconAnchor: [size / 2, size / 2],
+        html: `<div class="marker-dot" style="width:${size}px;height:${size}px;background:${stop.nights === 0 ? "#a1a1a6" : "#1d1d1f"};border:2.5px solid #fff"></div>`
+      })
     })
-      .bindPopup(popupHtml(s, s.maybe ? null : order), { maxWidth: 320 })
-      .bindTooltip(s.name, { className: "stop-label" + (s.maybe ? " maybe" : ""), direction: "right", offset: [9, 0] })
-      .addTo(s.maybe ? layers.maybeDots : layers.dots);
-    markerById[s.id] = m;
+      .bindPopup(popupHtml(stop, index + 1), { maxWidth: 310 })
+      .bindTooltip(stop.name, { className: "stop-label", direction: "right", offset: [9, 0] })
+      .addTo(layers.routeDots);
+    markerByName[stop.name] = marker;
   });
 
-  map.fitBounds(L.latLngBounds(journey.map(s => s.coords)), { padding: [40, 40] });
+  // Undecided dots: hollow.
+  maybes.forEach(stop => {
+    const marker = L.marker(stop.coords, {
+      icon: L.divIcon({
+        className: "", iconSize: [12, 12], iconAnchor: [6, 6],
+        html: `<div class="marker-dot" style="width:12px;height:12px;background:#fff;border:2.5px solid #c7900d"></div>`
+      })
+    })
+      .bindPopup(popupHtml(stop, null), { maxWidth: 310 })
+      .bindTooltip(stop.name, { className: "stop-label maybe", direction: "right", offset: [9, 0] })
+      .addTo(layers.spurDots);
+    markerByName[stop.name] = marker;
+  });
+
+  map.fitBounds(L.latLngBounds(journey.map(stop => stop.coords)), { padding: [45, 45] });
 }
 
-/* ---------- Sidebar list ---------- */
-
-
-const listEl = document.getElementById("stop-list");
-let html = "", currentLeg = null, order = 0;
-
-journey.forEach(s => {
-  if (s.leg !== currentLeg) {
-    currentLeg = s.leg;
-    const legStops = journey.filter(j => j.leg === currentLeg && !j.maybe);
-    const legNights = legStops.reduce((sum, j) => sum + nightsOf(j), 0);
-    const isMaybeLeg = currentLeg.startsWith("Maybe");
-    html += `<div class="leg-label ${isMaybeLeg ? "maybe-leg" : ""}"><span>${currentLeg}</span><span class="nights">${isMaybeLeg ? "" : legNights + " nights"}</span></div>`;
-  }
-  if (!s.maybe) order++;
-  const pick = pickedOption(s);
-  html += `
-    <div class="stop ${s.maybe ? "is-maybe" : ""}" data-id="${s.id}">
-      <div class="top">
-        <span class="idx">${s.maybe ? "·" : order}</span>
-        <span class="name">${s.name}</span>
-        ${scoreTag(s)} ${roleTag(s)} ${maybeTag(s)}
-        <span class="nights">${s.spurFrom ? "+" + s.cost + "n" : s.nights === 0 ? "—" : s.nights + "n"}</span>
-      </div>
-      <div class="why">${s.why.split(". ")[0].replace(/\.$/, "")}.</div>
-      ${pick ? `<div class="how">${pick.how} · ${pick.time}${s.travel.length > 1 ? ` · ${s.travel.length - 1} more option${s.travel.length > 2 ? "s" : ""}` : ""}</div>` : ""}
-      ${s.tags.length ? `<div class="acts">${s.tags.map(t => ACTIVITIES[t]).join(" · ")}</div>` : ""}
-    </div>`;
-});
-listEl.innerHTML = html;
-
-// Tapping a row flies the map to that stop and opens its popup.
-listEl.querySelectorAll(".stop").forEach(row => {
-  row.addEventListener("click", () => {
-    const m = markerById[row.dataset.id];
-    if (!m || !map) return;  // map failed to load — the list still reads fine
-    map.flyTo(m.getLatLng(), 8, { duration: 0.7 });
-    m.openPopup();
-    if (window.innerWidth <= 760) window.scrollTo({ top: 0, behavior: "smooth" });
+// The sidebar list, grouped by leg. Undecided stops sit right after the stop they branch from.
+function drawList(journey) {
+  let html = "", currentLeg = null, stopNumber = 0;
+  journey.forEach(stop => {
+    // Undecided stops stay inside the leg of the stop they hang off, so they don't start a new header.
+    const legForHeader = stop.maybe ? currentLeg : stop.leg;
+    if (legForHeader !== currentLeg) {
+      currentLeg = legForHeader;
+      const legNights = journey.filter(other => !other.maybe && other.leg === currentLeg)
+                               .reduce((sum, other) => sum + other.nights, 0);
+      html += `<div class="leg-label"><span>${currentLeg}</span><span class="nights">${legNights} nights</span></div>`;
+    }
+    if (!stop.maybe) stopNumber++;
+    html += `
+      <div class="stop ${stop.maybe ? "is-maybe" : ""}" data-name="${stop.name}">
+        <div class="top">
+          <span class="idx">${stop.maybe ? "·" : stopNumber}</span>
+          <span class="name">${stop.name}</span>
+          ${stop.maybe ? `<span class="maybe-tag">${stop.nights === 0 ? "day trip" : "+" + stop.nights + "n"}</span>`
+                       : `<span class="nights">${stop.nights === 0 ? "pass through" : stop.nights + "n"}</span>`}
+        </div>
+        <div class="why">${stop.why.split(". ")[0]}.</div>
+      </div>`;
   });
-});
+  listElement.innerHTML = html;
 
-/* ---------- "Show me" activity filters ---------- */
-// Pick one or more activities: stops that offer any of them stay bright, the rest fade.
-const activeFilters = new Set();
-const chipsEl = document.getElementById("chips");
-const clearBtn = document.getElementById("clear-filters");
-
-chipsEl.innerHTML = Object.entries(ACTIVITIES).map(([key, label]) => {
-  const count = journey.filter(s => s.tags.includes(key)).length;
-  return `<button class="chip" data-key="${key}">${label}<span class="count">${count}</span></button>`;
-}).join("");
-
-function applyFilters() {
-  const matches = s => activeFilters.size === 0 || s.tags.some(t => activeFilters.has(t));
-  journey.forEach(s => {
-    const on = matches(s);
-    const row = listEl.querySelector(`.stop[data-id="${s.id}"]`);
-    if (row) row.classList.toggle("dimmed", !on);
-    if (markerById[s.id]) markerById[s.id].setOpacity(on ? 1 : 0.15);
+  // Clicking a row flies the map to that stop and opens its popup.
+  listElement.querySelectorAll(".stop").forEach(row => {
+    row.addEventListener("click", () => {
+      const marker = markerByName[row.dataset.name];
+      if (!marker || !map) return;  // map failed to load: the list still reads fine
+      map.flyTo(marker.getLatLng(), 8, { duration: 0.7 });
+      marker.openPopup();
+    });
   });
-  chipsEl.querySelectorAll(".chip").forEach(c => c.classList.toggle("on", activeFilters.has(c.dataset.key)));
-  clearBtn.hidden = activeFilters.size === 0;
 }
 
-chipsEl.querySelectorAll(".chip").forEach(chip => {
-  chip.addEventListener("click", () => {
-    const key = chip.dataset.key;
-    if (activeFilters.has(key)) activeFilters.delete(key); else activeFilters.add(key);
-    applyFilters();
-  });
-});
-clearBtn.addEventListener("click", () => { activeFilters.clear(); applyFilters(); });
-
-/* ---------- Show or hide the maybes ---------- */
-document.getElementById("show-maybes").addEventListener("change", e => {
-  const on = e.target.checked;
+// Show or hide undecided stops on the map and in the list.
+function applyMaybeVisibility() {
+  const visible = showMaybesCheckbox.checked;
   if (map) {
-    drawLine(on);
-    [layers.maybeDots, layers.spurs].forEach(layer => on ? map.addLayer(layer) : map.removeLayer(layer));
+    [layers.spurs, layers.spurDots].forEach(layer => {
+      if (visible) map.addLayer(layer); else map.removeLayer(layer);
+    });
   }
-  listEl.querySelectorAll(".stop.is-maybe").forEach(row => { row.style.display = on ? "" : "none"; });
-  listEl.querySelectorAll(".leg-label.maybe-leg").forEach(h => { h.style.display = on ? "" : "none"; });
+  listElement.querySelectorAll(".stop.is-maybe").forEach(row => {
+    row.style.display = visible ? "" : "none";
+  });
+}
+
+// Draw everything for one option, and remember the choice in the page address (#A or #B).
+function showOption(option) {
+  const journey = sharedRoute.concat(option === "B" ? endingB : endingA);
+  document.querySelectorAll("#option-switch button").forEach(button => {
+    button.classList.toggle("active", button.dataset.option === option);
+  });
+  drawBudget(journey, option);
+  drawMap(journey);
+  drawList(journey);
+  applyMaybeVisibility();
+  history.replaceState(null, "", "#" + option);
+}
+
+document.querySelectorAll("#option-switch button").forEach(button => {
+  button.addEventListener("click", () => showOption(button.dataset.option));
 });
+showMaybesCheckbox.addEventListener("change", applyMaybeVisibility);
+
+// Start on whichever option is in the address, or Option A by default.
+showOption(location.hash === "#B" ? "B" : "A");
 </script>
 </body>
 </html>
