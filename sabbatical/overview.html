@@ -155,6 +155,10 @@
     padding: 9px 13px; font-size: 13px; line-height: 1.35; max-width: 300px; }
   .options a b { display: block; }
   .options a span { color: var(--muted); font-size: 12px; }
+  .so-far { margin-top: 10px; }
+  .so-far b { color: #d0342c; font-weight: 600; }
+  .tag.now { color: #fff; background: var(--blue); }
+  .spot.now { border-color: rgba(0,113,227,0.45); box-shadow: inset 3px 0 0 var(--blue); }
   .options a.on { border-color: var(--text); box-shadow: inset 0 0 0 1px var(--text); }
 </style>
 <script src="route-data.js"></script>
@@ -172,7 +176,8 @@
 
 <header class="wrap">
   <h1>Overview</h1>
-  <p class="sub">Every stop in order: why it's there, what to do, what to eat, where in town to stay, and how to get there. Red-edged cards are the beats. Dashed cards are maybes. The route is the same up to Siem Reap, then splits into two options.</p>
+  <p class="sub">Every stop still ahead: why it's there, what to do, what to eat, where to stay, and how to get there. Red-edged cards are the beats. Dashed cards are maybes. After Siem Reap the route splits into two options.</p>
+  <p class="sub so-far" id="so-far"></p>
   <div class="options" id="options">
     <a href="overview.html" data-option="1"><b>Option 1</b><span>Cambodia done early January. Malaysia and Singapore before the Thai islands.</span></a>
     <a href="overview.html?option=2" data-option="2"><b>Option 2</b><span>Cambodia done mid-January. Malaysia and Singapore after the Thai islands.</span></a>
@@ -220,29 +225,38 @@ function buildPage() {
   const maybeTag = s => s.maybe ? `<span class="tag maybe">maybe</span>` : "";
   const legId = leg => "leg-" + leg.toLowerCase().replace(/[^a-z]+/g, "-");
 
+  /* ---------- Where I've been: one line, no cards ---------- */
+  const been = journey.filter(s => s.status === "done" || s.status === "now");
+  document.getElementById("so-far").innerHTML = been.length
+    ? "So far: " + been.map(s => `<b>${s.name.replace(", again", "")}</b>`).join(" → ")
+    : "";
+
+  // Only stops still ahead get a card. The stop I'm at stays, marked "here now".
+  const ahead = journey.filter(s => s.status !== "done");
+
   /* ---------- The cards, grouped by leg ---------- */
-  const legs = [...new Set(journey.map(s => s.leg))];
+  const legs = [...new Set(ahead.map(s => s.leg))];
   let html = "", order = 0;
 
   legs.forEach(leg => {
-    const stops = journey.filter(s => s.leg === leg);
+    const stops = ahead.filter(s => s.leg === leg);
     const isMaybeLeg = stops.every(s => s.maybe);
-    const legNights = stops.filter(s => !s.maybe).reduce((sum, s) => sum + nightsOf(s), 0);
+    const legNights = stops.filter(s => !s.maybe && s.status !== "now").reduce((sum, s) => sum + nightsOf(s), 0);
     html += `<section class="leg ${isMaybeLeg ? "maybe-leg" : ""}" id="${legId(leg)}">
-      <h2>${leg} <span class="n">${isMaybeLeg ? "maybe" : legNights + " nights"}</span></h2>`;
+      <h2>${leg} <span class="n">${isMaybeLeg ? "maybe" : legNights ? legNights + " nights" : ""}</span></h2>`;
 
     stops.forEach(s => {
       if (!s.maybe) order++;
       const pick = s.travel.find(t => t.pick) || s.travel[0];
       const others = s.travel.filter(t => t !== pick);
-      const kind = s.maybe ? "maybe" : s.score === 7 ? "beat" : (s.role === "transit" ? "transit" : "");
+      const kind = s.status === "now" ? "now" : s.maybe ? "maybe" : s.score === 7 ? "beat" : (s.role === "transit" ? "transit" : "");
       html += `
       <article class="spot ${kind}" data-id="${s.id}" data-maybe="${s.maybe ? 1 : 0}">
         <div class="top">
-          <span class="idx">${s.maybe ? "·" : order}</span>
+          <span class="idx">${s.maybe || s.status === "now" ? "·" : order}</span>
           <span class="name">${s.name}</span>
-          ${scoreTag(s)} ${roleTag(s)} ${maybeTag(s)}
-          <span class="nights">${s.spurFrom ? (s.cost === 0 ? "day trip" : "+" + s.cost + " nights") : s.nights === 0 ? "pass through" : s.nights + (s.nights === 1 ? " night" : " nights")}</span>
+          ${s.status === "now" ? `<span class="tag now">here now</span>` : scoreTag(s) + " " + roleTag(s) + " " + maybeTag(s)}
+          <span class="nights">${s.status === "now" ? "" : s.spurFrom ? (s.cost === 0 ? "day trip" : "+" + s.cost + " nights") : s.nights === 0 ? "pass through" : s.nights + (s.nights === 1 ? " night" : " nights")}</span>
         </div>
         <div class="acts">${s.tags.map(t => ACTIVITIES[t]).join(" · ") || "&nbsp;"}</div>
         <div class="body">
@@ -278,12 +292,12 @@ function buildPage() {
   const maybeBtn = document.getElementById("maybe-toggle");
 
   chipsEl.insertAdjacentHTML("beforeend", Object.entries(ACTIVITIES).map(([key, label]) => {
-    const count = journey.filter(s => s.tags.includes(key)).length;
+    const count = ahead.filter(s => s.tags.includes(key)).length;
     return `<button class="chip" data-key="${key}">${label}<span class="count">${count}</span></button>`;
   }).join(""));
 
   function apply() {
-    journey.forEach(s => {
+    ahead.forEach(s => {
       const card = listEl.querySelector(`.spot[data-id="${s.id}"]`);
       const matches = activeFilters.size === 0 || s.tags.some(t => activeFilters.has(t));
       card.classList.toggle("dimmed", !matches);
