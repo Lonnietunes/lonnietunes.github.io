@@ -1,15 +1,19 @@
-/* Used by the overview (overview.html). The map page (index.html) carries its own copy of the route. */
+/* The one copy of the route. The map (index.html) and the overview (overview.html) both read it. */
 
 /* ============================================================================
    THE ROUTE DATA
    ----------------------------------------------------------------------------
    The trip comes in two options that share everything up to Siem Reap:
-     sharedRoute - Bangkok to Siem Reap, the same in both options
+     sharedRoute - what's done, where I am now, and the route on to Siem Reap
      endingA     - Option 1: Cambodia done early January, Malaysia and Singapore before the Thai islands
      endingB     - Option 2: Cambodia done mid-January, Malaysia and Singapore after the Thai islands
    The overview page shows one option at a time (overview.html?option=2 for Option 2).
 
+   To move the trip forward: set status: "done" on the stop you've left,
+   and status: "now" on the stop you're at. Stops without a status are still ahead.
+
    Each stop has:
+     status   - "done" (been there), "now" (here now), or left out (still ahead)
      leg      - which section of the trip it belongs to (groups the sidebar)
      name     - what shows on the map
      coords   - [latitude, longitude]
@@ -33,115 +37,69 @@
      cost     - for side-trip maybes: extra nights it adds
 ============================================================================ */
 
+// The flight home. The map counts the nights left from today to this date.
+const TRIP_END = "2027-02-26";
+
 const sharedRoute = [
+  /* ---------- Done ---------- */
   {
-    id: "bkk1", tags: ["city", "food", "party", "shopping", "history"], leg: "Thailand — North", name: "Bangkok", coords: [13.7563, 100.5018], nights: 4, score: 6, mode: "air",
-    why: "Where you land, and the best street food on the whole route. Food, nightlife, shopping and history in one city.",
-    do: "Night food crawl through Chinatown (Yaowarat) and Bang Rak, the Grand Palace and Wat Pho, a longtail boat down the canals, a rooftop bar, a night out in Thonglor. Chatuchak weekend market and the small boutiques in Ari for clothes.",
-    food: "Boat noodles, pad krapow, som tam, khao man gai, mango sticky rice.",
-    stay: [
-      { area: "Talat Noi & Charoen Krung", note: "Old riverside Chinatown: street art, galleries, cool little bars, and Yaowarat's street food a short walk away. Bangkok's Vesterbro, on the water.", pick: true },
-      { area: "Ari", note: "Leafy and local, full of cafés, small boutiques and great cheap food, on the BTS line. The Malasaña pick." },
-      { area: "Thonglor & Ekkamai", note: "For nightlife: the best bars and clubs, but pricier and more polished." }
-    ],
+    id: "bkk1", status: "done", tags: ["city", "food", "party", "shopping", "history"], leg: "Thailand — North", name: "Bangkok", coords: [13.7563, 100.5018], nights: 0, mode: "air",
+    why: "Where the trip started, and the best street food on the whole route.",
+    do: "Chinatown food crawl, the temples, the canals.",
+    food: "Boat noodles, pad krapow, som tam, mango sticky rice.",
     travel: [
-      { how: "Direct flight from Copenhagen", time: "~11 h", note: "SAS. Lands at Suvarnabhumi (BKK). Take the Airport Rail Link into town.", pick: true }
+      { how: "Direct flight from Copenhagen", time: "~11 h", note: "SAS into Suvarnabhumi.", pick: true }
     ],
-    months: "Nov–Feb is the cool dry season, the best window of the year."
+    months: "—"
   },
   {
-    id: "ayutthaya", tags: ["history"], leg: "Thailand — North", name: "Ayutthaya", coords: [14.3532, 100.5488], nights: 0, score: 4, maybe: true, spurFrom: "bkk1", cost: 0, mode: "ground",
-    why: "A free day trip: Thailand's ruined former capital, with temple spires and a Buddha head in banyan roots. Works at the start or the end of the trip.",
-    do: "Wat Mahathat, Wat Chaiwatthanaram at sunset, rent a bike to cover the ruins.",
-    food: "Boat noodles by the river, the town's specialty.",
+    id: "cnx", status: "done", tags: ["city", "food", "history", "shopping", "hiking", "tea"], leg: "Thailand — North", name: "Chiang Mai", coords: [18.7883, 98.9853], nights: 0, mode: "air",
+    why: "The northern base, timed for the Yi Peng lantern festival.",
+    do: "Yi Peng and Loy Krathong lanterns, the Old City temples, Doi Suthep, the Sunday Walking Street.",
+    food: "Khao soi, sai ua sausage, the night-market stalls.",
     travel: [
-      { how: "Train from Bangkok", time: "~1.5 h", note: "From Krung Thep Aphiwat or Hua Lamphong. There and back the same day.", pick: true },
-      { how: "Minivan from Bangkok", time: "~1.5 h", note: "From Mo Chit. Quicker to find, less comfortable." }
+      { how: "Flight from Bangkok", time: "~1 h 15", note: "", pick: true }
     ],
-    months: "Nov–Feb, cool and dry."
+    months: "—"
   },
   {
-    id: "cnx", tags: ["city", "food", "history", "shopping", "hiking", "tea"], leg: "Thailand — North", name: "Chiang Mai", coords: [18.7883, 98.9853], nights: 5, score: 7, role: "base", mode: "ground",
-    why: "Your northern base, and the Yi Peng lantern festival (around 24 Nov, confirm the date) makes it a beat. Without the festival it's a 6.",
-    do: "Yi Peng and Loy Krathong lanterns. Old City temples, Doi Suthep, a cooking class, a day trek on Doi Inthanon. Sunday Walking Street and the Nimman boutiques for clothes. Northern tea houses.",
-    food: "Khao soi (curry noodles) is the reason to be here. Also sai ua sausage, khan tok dinners, and the night-market stalls.",
-    stay: [
-      { area: "Old City, east side near Tha Phae Gate", note: "Walkable to the temples, the Sunday Walking Street and the Yi Peng action. Plenty of social hostels.", pick: true },
-      { area: "Nimman", note: "Chiang Mai's cool quarter: cafés, cocktail bars, boutiques, a university crowd. The Malasaña pick." },
-      { area: "Wat Ket, by the Ping River", note: "Calm riverside streets with old teak houses and good restaurants. The by-the-water pick." }
-    ],
+    id: "chiangdao", status: "done", tags: ["hiking"], leg: "Thailand — North", name: "Chiang Dao", coords: [19.3667, 98.9667], nights: 0, mode: "ground",
+    why: "A quiet mountain village under Doi Chiang Dao, north of Chiang Mai.",
+    do: "The Chiang Dao cave, walks in the valley, the hot springs.",
+    food: "Simple northern Thai at the guesthouses.",
     travel: [
-      { how: "Flight from Bangkok", time: "~1 h 15", note: "Fastest. Allow 3–4 h door to door with airport transfers.", pick: true },
-      { how: "Sleeper train from Bangkok", time: "~11–14 h", note: "Slowest, but you sleep on the way and save a hotel night. Book ahead in the festival season." },
-      { how: "Bus from Bangkok", time: "~9–12 h", note: "VIP buses from Mo Chit, the cheapest option. Book on 12Go." }
+      { how: "Bus or car from Chiang Mai", time: "~1.5 h", note: "", pick: true }
     ],
-    months: "Nov–Feb is peak: cool, dry, clear. Book festival-night beds now, as prices jump."
+    months: "—"
   },
   {
-    id: "pai", tags: ["party", "hiking", "swim"], leg: "Thailand — North", name: "Pai", coords: [19.3583, 98.44], nights: 4, score: 5, mode: "ground",
-    why: "A mountain town where you keep running into the same people. Your best backpacker bars and parties in the north.",
-    do: "Pai Canyon at sunset, hot springs, waterfalls, the bamboo bridge. A driver or a tour for the scenic loops (you're not licensed to ride yourself). Bars and parties at night.",
-    food: "A café and night-market scene far bigger than the town.",
-    stay: [
-      { area: "Near Walking Street", note: "For the bars and meeting people.", pick: true },
-      { area: "Across the river", note: "Bungalows with a view and quiet nights, 10 minutes' walk from town." }
-    ],
+    id: "cnx2", status: "now", tags: ["city", "food", "history", "shopping"], leg: "Thailand — North", name: "Chiang Mai, again", coords: [18.7883, 98.9853], nights: 0, mode: "ground",
+    why: "Back in Chiang Mai before the flight to Laos.",
+    do: "Whatever got missed the first time: a cooking class, Doi Suthep, the Nimman cafés and boutiques.",
+    food: "One more khao soi before Laos.",
     travel: [
-      { how: "Minibus from Chiang Mai", time: "~3 h", note: "762 curves. Take a motion-sickness tablet. Prestige or Aya.", pick: true }
+      { how: "Bus or car from Chiang Dao", time: "~1.5 h", note: "", pick: true }
     ],
-    months: "Nov–Feb. Mornings are cold, so bring a warm layer."
+    months: "—"
   },
+
+  /* ---------- Next ---------- */
   {
-    id: "cei", tags: ["history"], leg: "Thailand — North", name: "Chiang Rai", coords: [19.9105, 99.8406], nights: 1, role: "transit", mode: "ground",
-    why: "A staging post. Sleep here to reach the border and the slow boat the next morning.",
-    do: "The White Temple (Wat Rong Khun) and the Blue Temple fill the afternoon.",
-    food: "Northern Thai food and a good night bazaar.",
-    travel: [
-      { how: "Minibus to Chiang Mai, then bus", time: "~7 h total", note: "Pai → Chiang Mai, then Green Bus to Chiang Rai. A long day, so start early.", pick: true },
-      { how: "Private driver from Pai", time: "~4–5 h", note: "Book through your guesthouse. Costs more, saves hours." }
-    ],
-    months: "Nov–Feb."
-  },
-  {
-    id: "huayxai", tags: [], leg: "Laos", name: "Huay Xai (border)", coords: [20.2763, 100.4127], nights: 0, role: "transit", mode: "ground",
-    why: "Cross the Friendship Bridge into Laos and get your visa on arrival. The slow boat leaves from here.",
-    do: "Border formalities, then the pier. Bring US dollars in cash for the visa (see the Visas page).",
-    food: "Grab baguette sandwiches for the boat.",
-    travel: [
-      { how: "Early bus to Chiang Khong, then the bridge", time: "~2.5 h", note: "Take the 6 am bus from Chiang Rai to catch the boat at about 11 am.", pick: true },
-      { how: "Slow-boat package with pickup", time: "~3 h", note: "Shompoo, Nagi of Mekong and others collect you in Chiang Rai and handle the border. Check current operators." },
-      { how: "Sleep in Huay Xai the night before", time: "—", note: "The calmer option if you want a slow morning." }
-    ],
-    months: "Nov–Feb."
-  },
-  {
-    id: "pakbeng", tags: ["party"], leg: "Laos", name: "Mekong slow boat (Pakbeng)", coords: [19.894, 101.134], nights: 1, score: 6, mode: "water",
-    why: "Two days down the Mekong with everyone else heading the same way. The transport is the social activity: beers on deck, then the same people in Pakbeng that night.",
-    do: "Sit on the boat, watch the river, meet people. Overnight in Pakbeng, then day two to Luang Prabang.",
-    food: "Simple guesthouse Lao food in Pakbeng. Bring snacks and drinks for the boat.",
-    travel: [
-      { how: "Public slow boat", time: "2 days", note: "Cheapest and most social. Buy the ticket at the Huay Xai pier, or through your guesthouse the day before.", pick: true },
-      { how: "Mid-range boat", time: "2 days", note: "Shompoo, Nagi of Mekong: smaller group, real seats, lunch included. Still social. Check current names." },
-      { how: "Luxury boat", time: "2 days", note: "Luang Say, with its own lodge. Older, quieter crowd. Not for you." }
-    ],
-    months: "Nov–Feb. The river is high after the rains and the air is clear."
-  },
-  {
-    id: "lpq", tags: ["history", "swim", "food", "shopping"], leg: "Laos", name: "Luang Prabang", coords: [19.8867, 102.135], nights: 4, score: 7, mode: "water",
-    why: "The most beautiful historical town on your whole route. Touristy but still completely itself.",
+    id: "lpq", tags: ["history", "swim", "food", "shopping"], leg: "Laos", name: "Luang Prabang", coords: [19.8867, 102.135], nights: 4, score: 7, mode: "air",
+    why: "The most beautiful historical town on the whole route. Touristy but still completely itself.",
     do: "Swim at Kuang Si Falls, the monks' dawn alms round, Mount Phousi at sunset, the night market for textiles and clothes. Utopia bar for a social evening.",
     food: "Laap, Mekong river fish, Luang Prabang sausage, and very good baguettes.",
     stay: [
       { area: "The old-town peninsula", note: "Between the Mekong and the Nam Khan. Stay on the quieter Nam Khan side for river views and morning calm.", pick: true }
     ],
     travel: [
-      { how: "Day two of the slow boat", time: "~8 h", note: "Lands you right in town.", pick: true }
+      { how: "Flight from Chiang Mai", time: "~1 h", note: "Lao Airlines flies direct. Get the Lao visa on arrival or the e-visa first (see the Visas page). The airport is 15 minutes from the old town.", pick: true }
     ],
     months: "Nov–Feb is the dry cool season and the best time to be here."
   },
   {
     id: "han", tags: ["city", "food", "history", "shopping", "party", "tea"], leg: "Vietnam", name: "Hanoi", coords: [21.0278, 105.8342], nights: 3, score: 5, role: "base", mode: "air",
-    why: "The northern capital and street-food headquarters. Easy for meeting people solo, and the jumping-off point for Sapa and Mai Chau.",
+    why: "The northern capital and street-food headquarters. Easy for meeting people solo.",
     do: "Walk the Old Quarter with no plan, the Temple of Literature, Hoan Kiem lake at dawn, beer on Ta Hien street. Tailors and local streetwear. Lotus tea.",
     food: "Bun cha, pho bo, banh cuon, egg coffee. Eat from plastic stools on the pavement.",
     stay: [
@@ -150,55 +108,26 @@ const sharedRoute = [
       { area: "French Quarter", note: "Grand, leafy and nicer, a short walk south of the lake." }
     ],
     travel: [
-      { how: "Flight from Luang Prabang", time: "~1 h", note: "Lao Airlines or Vietnam Airlines. The overland alternative is a 24 h bus.", pick: true }
+      { how: "Flight from Luang Prabang", time: "~1 h", note: "Lao Airlines or Vietnam Airlines.", pick: true }
     ],
     months: "Nov–Dec is cool and dry. Air quality gets bad in winter, so check IQAir."
   },
   {
-    id: "sapa", tags: ["hiking"], leg: "Vietnam", name: "Sapa", coords: [22.3364, 103.8438], nights: 3, score: 5, maybe: true, spurFrom: "han", cost: 3, mode: "ground",
-    why: "Village-to-village walks through terraced valleys, on foot with no bike needed. Weather dependent: December brings cold and fog, so go only on a clear forecast.",
-    do: "Walk to Cat Cat, Lao Chai and Ta Van with a Hmong or Dao guide, one night in a homestay, Fansipan if the sky is clear.",
-    food: "Grilled skewers, black chicken hotpot, corn wine at the night market.",
-    stay: [
-      { area: "A homestay in Ta Van", note: "Quieter than Sapa town, and the walks start at the door.", pick: true },
-      { area: "Sapa town", note: "If the weather turns: cafés, heating and an easy bus back." }
-    ],
-    travel: [
-      { how: "Sleeper bus from Hanoi", time: "~5–6 h", note: "Straight to Sapa town. Book on 12Go.", pick: true },
-      { how: "Night train to Lao Cai, then 1 h up", time: "~8 h + 1 h", note: "Comfier, and you sleep on the way." }
-    ],
-    months: "Mar–May and Sep–Nov are best. Dec–Feb is cold with fog, and a clear day is luck."
-  },
-  {
-    id: "maichau", tags: ["hiking"], leg: "Vietnam", name: "Mai Chau", coords: [20.66, 105.09], nights: 2, score: 5, mode: "ground",
-    why: "A green valley of White Thai stilt-house villages, reachable in an afternoon. The gentle side of the north.",
-    do: "Cycle the valley floor between villages, a short hill walk, a night in a stilt-house homestay.",
-    food: "Home-cooked at the homestay: sticky rice in bamboo, grilled river fish.",
-    stay: [
-      { area: "A stilt-house homestay in Lac or Pom Coong", note: "The point of coming. Bikes usually included.", pick: true }
-    ],
-    travel: [
-      { how: "Bus or limousine van from Hanoi", time: "~3.5 h", note: "Several a day. Book on 12Go or through your hostel.", pick: true },
-      { how: "From Sapa", time: "a long day", note: "Back via Hanoi. Break it with a night in Hanoi if you can." }
-    ],
-    months: "Nov–Dec while the valley is still green and dry."
-  },
-  {
-    id: "ninhbinh", tags: ["hiking", "history"], leg: "Vietnam", name: "Ninh Binh", coords: [20.2506, 105.9744], nights: 3, score: 6, mode: "ground",
-    why: "Limestone towers rising out of rice paddies, seen from a rowboat. Ha Long Bay on land, and better.",
+    id: "ninhbinh", tags: ["hiking", "history"], leg: "Vietnam", name: "Ninh Binh", coords: [20.2506, 105.9744], nights: 2, score: 6, maybe: true, spurFrom: "han", cost: 2, mode: "ground",
+    why: "Limestone towers rising out of rice paddies, seen from a rowboat. The one northern side trip still worth a thought, because it's close to Hanoi.",
     do: "Row through the caves at Trang An or Tam Coc, cycle between the paddies and temples, climb the steps of Hang Mua for the view.",
     food: "Goat meat (the local speciality) and com chay, crispy rice.",
     stay: [
       { area: "Tam Coc village", note: "Among the paddies and karsts, with the social hostels and bike rental.", pick: true }
     ],
     travel: [
-      { how: "Private car or minivan from Mai Chau", time: "~3 h", note: "Across the hills, without going back through Hanoi. Your homestay can arrange it.", pick: true },
-      { how: "Bus via Hanoi", time: "~5–6 h", note: "Cheaper, slower." }
+      { how: "Bus or limousine van from Hanoi", time: "~2 h", note: "Several a day. Book on 12Go or through your hostel.", pick: true },
+      { how: "Train from Hanoi", time: "~2.5 h", note: "Ninh Binh is on the main north–south line, so the night train to Hue can leave from here." }
     ],
     months: "Dec is fine. Book a social hostel, because your evenings depend on it."
   },
   {
-    id: "hue", tags: ["history"], leg: "Vietnam", name: "Hue", coords: [16.4637, 107.5909], nights: 1, overnightTravel: 1, role: "transit", mode: "ground",
+    id: "hue", tags: ["history"], leg: "Vietnam", name: "Hue", coords: [16.4637, 107.5909], nights: 1, role: "transit", mode: "air",
     why: "One night, then south along the coast. The walled Imperial Citadel fills the afternoon.",
     do: "The Imperial Citadel, and a royal tomb if there's time.",
     food: "Bun bo Hue, the city's spicy beef noodle soup.",
@@ -206,8 +135,8 @@ const sharedRoute = [
       { area: "South bank near the walking street", note: "By the Perfume River, walking distance to food and bars.", pick: true }
     ],
     travel: [
-      { how: "Night train from Ninh Binh", time: "~11 h", note: "Ninh Binh is on the main north–south line. Book a soft-sleeper berth on the Vietnam Railways site or 12Go.", pick: true },
-      { how: "Flight Hanoi → Hue", time: "~1 h 15", note: "Fastest, but you lose the train night and have to go back to Hanoi." }
+      { how: "Flight Hanoi → Hue", time: "~1 h 15", note: "Vietnam Airlines, Vietjet or Bamboo. The fastest way south.", pick: true },
+      { how: "Night train from Hanoi", time: "~13 h", note: "You sleep on the way and save a hotel night. Book a soft-sleeper berth on 12Go." }
     ],
     months: "Hue is the wettest city in Vietnam Oct–Dec. Bring a rain jacket, and another reason to keep this to one night."
   },
